@@ -41,7 +41,9 @@ Yes! It follows the Open Source Definition (see https://opensource.org/osd.html)
 
 Of course! The development and improvement of the model is highly encouraged. All that is asked is that proper credit(s) be given where credit is due. 
 
+## How do I compile the code?
 
+All you need is a FORTRAN 90 compatible compiler. For example, gnu's f95 compiler available on most linux/unix platforms (including the ubuntu app in Windows 10) will generate an executable from the source code. Simply type `f95 *.f90 -o mc`.
 
 ## Is there support?
 
