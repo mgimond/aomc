@@ -28,13 +28,20 @@ The model will run on any platform that supports a FORTRAN 90 compiler. Intel pr
 
 No. It is all console (command line) based. However, the output can easily be imported into a spreadsheet or a favorite graphing program.  
 
-## Is the model free? 
+## Has this model appeared in publications?
 
+Yes. The model appears in the following publications:
+* Gimond M., 2005. Comprehensive assessment of the two-flow model's shape factors in aquatic environments. Applied Optics, vol. 44, n. 6, pp 966-975.
+* Gimond M., 2004. Description and verification of an aquatic optics Monte Carlo model. Environmental Modelling and Software, vol 19, n. 12, pp 1065-1076.
+
+## Is the model free? 
 Yes! It follows the Open Source Definition (see https://opensource.org/osd.html). 
 
 ## Can I modify the program? 
 
 Of course! The development and improvement of the model is highly encouraged. All that is asked is that proper credit(s) be given where credit is due. 
+
+
 
 ## Is there support?
 
