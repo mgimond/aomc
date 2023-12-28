@@ -1,3 +1,4 @@
+![fish](aomc2_inter.jpg)
 ## What is the AOMC model? 
 
 The AOMC model is an Open Source Aquatic Optics Monte Carlo model. It is written in FORTRAN 90. It simulates the propagation of light in an optically shallow, vertically heterogeneous aquatic medium. The model is in continuous development. Some of the routines have been extensively tested while others are still experimental. 
