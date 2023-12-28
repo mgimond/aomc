@@ -47,4 +47,4 @@ All you need is a FORTRAN 90 compatible compiler. For example, gnu's f95 compile
 
 ## Is there support?
 
-Yes and No. I haven't touched this project since 2003 so support is very limited.
+Yes and No. I haven't touched this project since 2003 so support is very limited. Documentation can be found [here](Documentation.md).
