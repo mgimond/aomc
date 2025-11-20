@@ -78,6 +78,8 @@ PROGRAM mc
   CHARACTER(LEN=5)  :: cdepth !Conversion of NUM to CHAR
   CHARACTER(LEN=7)  :: clamb  !Conversion of NUM to CHAR
   CHARACTER(LEN=15)  :: cformat !Conversion of NUM to CHAR
+  CHARACTER(LEN=64) :: rowfmt
+  CHARACTER(LEN=64) :: headfmt
   INTEGER, PARAMETER :: p8i = SELECTED_INT_KIND(14)    ! Allows for values greater than 32 bit
   INTEGER   :: ios,records
   INTEGER   :: ii,jj,kk,ll !Loop index
@@ -1838,6 +1840,9 @@ PROGRAM mc
 
         OPEN(14,iostat=ios, file='gridedo.out', status='unknown')
         OPEN(15,iostat=ios, file='grided.out', status='unknown')
+		OPEN(16,iostat=ios, file='grideu.out', status='replace')
+		OPEN(17,iostat=ios, file='grideuo.out', status='replace')
+
 
      END IF
 
@@ -2236,6 +2241,64 @@ PROGRAM mc
               END DO
 
            ELSE
+                
+			! Plain ASCII matrix output to already-open units 14 (Eod) and 15 (Ed)
+			  ! One grid per depth per wavelength; include small headers for human readability.
+
+			  ! Build a row format with numgrid values per line (engineering format for safety)
+			  WRITE(rowfmt,'(A,I0,A)') '(', numgrid, '(ES16.8,1X))'
+			  headfmt = '(A,1X,I0,1X,A,1X,F12.5,1X,A)'
+
+			  ! Loop over depths and write both Eod and Ed grids
+			  DO kk = -1 , numlogly
+				
+				
+				! ---- Eod grid to unit 14 ----
+				WRITE(14,'(A,1X,I0,1X,A,1X,F10.3,1X,A,1X,A,1X,F12.6,1X,A)') &
+					 'GRID',  numgrid,                        &
+					 'LAMBDA', wavelength(lam), 'nm',         &
+					 'DEPTH', layval(kk),        'm'
+				WRITE(14,'(A,1X,F12.6,1X,F12.6)') 'XMIN XMAX', -cellsize*sidebound, cellsize*sidebound
+				WRITE(14,'(A,1X,F12.6,1X,F12.6)') 'YMIN YMAX', -cellsize*sidebound, cellsize*sidebound
+				WRITE(14,'(A,1X,ES16.8,1X,ES16.8)') 'ZMIN ZMAX', MINVAL(eod(lam,:,:,kk)), MAXVAL(eod(lam,:,:,kk))
+				DO jj = -sidebound , sidebound
+				  WRITE(14,rowfmt) ( eod(lam,ii,jj,kk), ii = -sidebound , sidebound )
+				END DO
+			
+				! ---- Ed grid to unit 15 ----
+				WRITE(15,'(A,1X,I0,1X,A,1X,F10.3,1X,A,1X,A,1X,F12.6,1X,A)') &
+					 'GRID',  numgrid,                        &
+					 'LAMBDA', wavelength(lam), 'nm',         &
+					 'DEPTH', layval(kk),        'm'
+				WRITE(15,'(A,1X,F12.6,1X,F12.6)') 'XMIN XMAX', -cellsize*sidebound, cellsize*sidebound
+				WRITE(15,'(A,1X,F12.6,1X,F12.6)') 'YMIN YMAX', -cellsize*sidebound, cellsize*sidebound
+				WRITE(15,'(A,1X,ES16.8,1X,ES16.8)') 'ZMIN ZMAX', MINVAL(ed(lam,:,:,kk)), MAXVAL(ed(lam,:,:,kk))
+				DO jj = -sidebound , sidebound
+				  WRITE(15,rowfmt) ( ed(lam,ii,jj,kk), ii = -sidebound , sidebound )
+				END DO
+  
+				! ---- Eu grid to unit 16 ----
+				  WRITE(16,'(A,1X,I0,1X,A,1X,F10.3,1X,A,1X,A,1X,F12.6,1X,A)') &
+					   'GRID', numgrid, 'LAMBDA', wavelength(lam), 'nm', 'DEPTH', layval(kk), 'm'
+				  WRITE(16,'(A,1X,F12.6,1X,F12.6)') 'XMIN XMAX', -cellsize*sidebound, cellsize*sidebound
+				  WRITE(16,'(A,1X,F12.6,1X,F12.6)') 'YMIN YMAX', -cellsize*sidebound, cellsize*sidebound
+				  WRITE(16,'(A,1X,ES16.8,1X,ES16.8)') 'ZMIN ZMAX', MINVAL(eu(lam,:,:,kk)), MAXVAL(eu(lam,:,:,kk))
+				  DO jj = -sidebound , sidebound
+					WRITE(16,rowfmt) ( eu(lam,ii,jj,kk), ii = -sidebound , sidebound )
+				  END DO
+
+				  ! ---- Euo grid to unit 17 ----
+				  WRITE(17,'(A,1X,I0,1X,A,1X,F10.3,1X,A,1X,A,1X,F12.6,1X,A)') &
+					   'GRID', numgrid, 'LAMBDA', wavelength(lam), 'nm', 'DEPTH', layval(kk), 'm'
+				  WRITE(17,'(A,1X,F12.6,1X,F12.6)') 'XMIN XMAX', -cellsize*sidebound, cellsize*sidebound
+				  WRITE(17,'(A,1X,F12.6,1X,F12.6)') 'YMIN YMAX', -cellsize*sidebound, cellsize*sidebound
+				  WRITE(17,'(A,1X,ES16.8,1X,ES16.8)') 'ZMIN ZMAX', MINVAL(eou(lam,:,:,kk)), MAXVAL(eou(lam,:,:,kk))
+				  DO jj = -sidebound , sidebound
+					WRITE(17,rowfmt) ( eou(lam,ii,jj,kk), ii = -sidebound , sidebound )
+				  END DO
+
+
+			  END DO
 
            END IF
 
@@ -2253,6 +2316,8 @@ PROGRAM mc
 
         CLOSE(14)
         CLOSE(15)
+		CLOSE(16)
+		CLOSE(17)
 
      END IF
 
