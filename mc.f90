@@ -1,4 +1,4 @@
-!     Last change:  MG   24 Aug 2003    5:03 pm
+!     Last change:  MG   20 Nov 2025    15:00
 PROGRAM mc
 
   ! Purpose:
@@ -16,6 +16,7 @@ PROGRAM mc
   !     Date     Programmer           Description of change
   !     ====     ==========           =====================
   !  3/26/2003   Manuel Gimond        Original code
+  !  11/20/2025  Manuel Gimond		  Added routine to generate a non-surfer formatted grid output file
   !
   ! License/Disclaimer
   ! ------------------
