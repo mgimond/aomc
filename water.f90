@@ -370,7 +370,7 @@ SUBROUTINE water(lam,action)
         ys = y(0) + b * SIN( phi )
         op = op - SQRT( z(0)**2 + b**2) ! remaining OP if photon remains in water
 
-        CALL logbin(x(1),y(1),0,lam)    ! Log the photon as it 'hits' the interface
+        CALL logbin(xs,ys,0,lam)    ! Log the photon as it 'hits' the interface
         CALL interface_sub(refr(1),refr(0),switch)
 
 
