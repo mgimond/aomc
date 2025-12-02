@@ -17,6 +17,7 @@ PROGRAM mc
   !     ====     ==========           =====================
   !  3/26/2003   Manuel Gimond        Original code
   !  11/20/2025  Manuel Gimond		  Added routine to generate a non-surfer formatted grid output file
+  !  12/02/2025  Manuel Gimond        Added missing PHI column in the rad.out output
   !
   ! License/Disclaimer
   ! ------------------
@@ -2087,14 +2088,14 @@ PROGRAM mc
                  IF (ii == 1) THEN
 
                     WRITE(12,fmt) 0.0, (SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam),  &
-                                         jj=1, NINT(phiint/4.))
+                                         jj=1, NINT(phiint/4.)+ 1) 
 
                  ELSE IF (ii < alphaint) THEN ! ]0 to 180[ degrees
 
                     IF (angint == 1) THEN
 
                        WRITE(12,fmt) (nalpha * ii * 180/PI), ( SUM(rad(lam,:,:,kk,ii,jj)) / &
-                            norma(lam), jj=1, NINT(phiint/4.))
+                            norma(lam), jj=1, NINT(phiint/4.) + 1) 
 
                     ELSE
 
@@ -2102,19 +2103,19 @@ PROGRAM mc
 
                           WRITE(12,fmt) ( ( ACOS(-(ii - REAL(alphaint)/2. -1) * muu) +     &
                                ACOS(-(ii - REAL(alphaint)/2.) * muu)) /2. )*180/PI,       &
-                               ( SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam), jj=1, NINT(phiint/4.))
+                               ( SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam), jj=1, NINT(phiint/4.)+ 1) 
                        ELSE
 
                           WRITE(12,fmt) ( (ACOS((1-mum) - (ii-2)*muu) + ACOS((1-mum) -     &
                                (ii-1)*muu)) /2. )*180/PI,                                 &
-                               (SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam), jj=1, NINT(phiint/4.))
+                               (SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam), jj=1, NINT(phiint/4.)+ 1) 
                        END IF
 
                     END IF
 
                  ELSE IF (ii == alphaint) THEN
 
-                    WRITE(12,fmt) 180.0,( SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam), jj=1, NINT(phiint/4.))
+                    WRITE(12,fmt) 180.0,( SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam), jj=1, NINT(phiint/4.)+ 1) 
 
                  ELSE IF (ii < (2*alphaint - 1) ) THEN !180 to 360 degrees
 
@@ -2123,7 +2124,7 @@ PROGRAM mc
 
                        WRITE(12,fmt) (nalpha * ii * 180/PI),                  &
                             (SUM(rad(lam,:,:,kk,(2 * alphaint - ii+1),              &
-                            (jj + phiint/2)))/norma(lam), jj=1, NINT(phiint/4.))
+                            (jj + phiint/2)))/norma(lam), jj=1, NINT(phiint/4.)+ 1) 
 
                     ELSE
 
@@ -2132,14 +2133,14 @@ PROGRAM mc
                           WRITE(12,fmt) ( (2.*PI- ACOS(-(2*alphaint-ii - REAL(alphaint)/2. -1) * muu)) +     &
                                (2.*PI- ACOS(-(2*alphaint-ii - REAL(alphaint)/2.) * muu)))/2.*180/PI,         &
                                (SUM(rad(lam,:,:,kk,(2 * alphaint - ii),                                          &
-                               (jj + phiint/2)))/norma(lam), jj=1, NINT(phiint/4.))
+                               (jj + phiint/2)))/norma(lam), jj=1, NINT(phiint/4.)+ 1) 
 
                        ELSE
 
                           WRITE(12,fmt) ( (2.*PI-ACOS((1-mum) - (2*alphaint-ii-2)*muu)) +      &
                                (2.*PI-ACOS((1-mum) - (2*alphaint-ii-1)*muu))  )/2.*180/PI ,    &
                                (SUM(rad(lam,:,:,kk,(2 * alphaint - ii),                            &
-                               (jj + phiint/2)))/norma(lam), jj=1, NINT(phiint/4.))
+                               (jj + phiint/2)))/norma(lam), jj=1, NINT(phiint/4.)+ 1) 
 
                        END IF
 
@@ -2149,7 +2150,7 @@ PROGRAM mc
 
                     WRITE(12,fmt) 360.0 ,                                     &
                          (SUM(rad(lam,:,:,kk,(2 * alphaint - ii),                 &
-                         (jj + phiint/2)))/norma(lam), jj=1, NINT(phiint/4.))
+                         (jj + phiint/2)))/norma(lam), jj=1, NINT(phiint/4.)+ 1) 
 
 
                  END IF
