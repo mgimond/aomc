@@ -1,4 +1,4 @@
-!     Last change:  MG   20 Nov 2025    15:00
+!     Last change:  MG   02 Dec 2025    20:25
 PROGRAM mc
 
   ! Purpose:
@@ -18,6 +18,7 @@ PROGRAM mc
   !  3/26/2003   Manuel Gimond        Original code
   !  11/20/2025  Manuel Gimond		  Added routine to generate a non-surfer formatted grid output file
   !  12/02/2025  Manuel Gimond        Added missing PHI column in the rad.out output
+  !  12/02/2025  Manuel Gimond        Allow for more than 4 PHI columns in rad.out output
   !
   ! License/Disclaimer
   ! ------------------
@@ -2075,9 +2076,9 @@ PROGRAM mc
 
         CASE(0)
 
-           WRITE(fmt,'(a,I4,a)') '(A12,2x,',NINT(phiint/4. + 1),'(F6.2,6x))'
-           WRITE(12,fmt) ' Angle(rad) ', ( (nphi * ii * 180 / PI), ii=0, NINT(phiint/4.))
-           WRITE(fmt,'(a,I4,a)') '(F6.2,6x,',NINT(phiint/4. + 1),'(F11.7,1x))'
+           WRITE(fmt,'(a,I4,a)') '(A12,2x,',INT(phiint/2.),'(F6.2,6x))'
+           WRITE(12,fmt) ' Angle(rad) ', ( (nphi * ii * 180 / PI), ii=0, INT(phiint/2.) - 1)
+           WRITE(fmt,'(a,I4,a)') '(F6.2,6x,',INT(phiint/2.),'(F11.7,1x))'
 
            DO kk = -1 , numlogly
 
@@ -2088,14 +2089,14 @@ PROGRAM mc
                  IF (ii == 1) THEN
 
                     WRITE(12,fmt) 0.0, (SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam),  &
-                                         jj=1, NINT(phiint/4.)+ 1) 
+                                         jj=1, INT(phiint/2.)) 
 
                  ELSE IF (ii < alphaint) THEN ! ]0 to 180[ degrees
 
                     IF (angint == 1) THEN
 
                        WRITE(12,fmt) (nalpha * ii * 180/PI), ( SUM(rad(lam,:,:,kk,ii,jj)) / &
-                            norma(lam), jj=1, NINT(phiint/4.) + 1) 
+                            norma(lam), jj=1, INT(phiint/2.)) 
 
                     ELSE
 
@@ -2103,19 +2104,19 @@ PROGRAM mc
 
                           WRITE(12,fmt) ( ( ACOS(-(ii - REAL(alphaint)/2. -1) * muu) +     &
                                ACOS(-(ii - REAL(alphaint)/2.) * muu)) /2. )*180/PI,       &
-                               ( SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam), jj=1, NINT(phiint/4.)+ 1) 
+                               ( SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam), jj=1, INT(phiint/2.)) 
                        ELSE
 
                           WRITE(12,fmt) ( (ACOS((1-mum) - (ii-2)*muu) + ACOS((1-mum) -     &
                                (ii-1)*muu)) /2. )*180/PI,                                 &
-                               (SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam), jj=1, NINT(phiint/4.)+ 1) 
+                               (SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam), jj=1, INT(phiint/2.)) 
                        END IF
 
                     END IF
 
                  ELSE IF (ii == alphaint) THEN
 
-                    WRITE(12,fmt) 180.0,( SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam), jj=1, NINT(phiint/4.)+ 1) 
+                    WRITE(12,fmt) 180.0,( SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam), jj=1, INT(phiint/2.)) 
 
                  ELSE IF (ii < (2*alphaint - 1) ) THEN !180 to 360 degrees
 
@@ -2124,7 +2125,7 @@ PROGRAM mc
 
                        WRITE(12,fmt) (nalpha * ii * 180/PI),                  &
                             (SUM(rad(lam,:,:,kk,(2 * alphaint - ii+1),              &
-                            (jj + phiint/2)))/norma(lam), jj=1, NINT(phiint/4.)+ 1) 
+                            (jj + phiint/2)))/norma(lam), jj=1, INT(phiint/2.)) 
 
                     ELSE
 
@@ -2133,14 +2134,14 @@ PROGRAM mc
                           WRITE(12,fmt) ( (2.*PI- ACOS(-(2*alphaint-ii - REAL(alphaint)/2. -1) * muu)) +     &
                                (2.*PI- ACOS(-(2*alphaint-ii - REAL(alphaint)/2.) * muu)))/2.*180/PI,         &
                                (SUM(rad(lam,:,:,kk,(2 * alphaint - ii),                                          &
-                               (jj + phiint/2)))/norma(lam), jj=1, NINT(phiint/4.)+ 1) 
+                               (jj + phiint/2)))/norma(lam), jj=1, INT(phiint/2.)) 
 
                        ELSE
 
                           WRITE(12,fmt) ( (2.*PI-ACOS((1-mum) - (2*alphaint-ii-2)*muu)) +      &
                                (2.*PI-ACOS((1-mum) - (2*alphaint-ii-1)*muu))  )/2.*180/PI ,    &
                                (SUM(rad(lam,:,:,kk,(2 * alphaint - ii),                            &
-                               (jj + phiint/2)))/norma(lam), jj=1, NINT(phiint/4.)+ 1) 
+                               (jj + phiint/2)))/norma(lam), jj=1, INT(phiint/2.)) 
 
                        END IF
 
@@ -2150,7 +2151,7 @@ PROGRAM mc
 
                     WRITE(12,fmt) 360.0 ,                                     &
                          (SUM(rad(lam,:,:,kk,(2 * alphaint - ii),                 &
-                         (jj + phiint/2)))/norma(lam), jj=1, NINT(phiint/4.)+ 1) 
+                         (jj + phiint/2)))/norma(lam), jj=1, INT(phiint/2.)) 
 
 
                  END IF
