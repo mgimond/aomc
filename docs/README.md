@@ -1,3 +1,5 @@
+![AOMC Illustration](./aomc2_inter.jpg)
+
 ## What is the AOMC model? 
 
 The AOMC model is an Open Source Aquatic Optics Monte Carlo model. It is written in FORTRAN 90. It simulates the propagation of light in an optically shallow, vertically heterogeneous aquatic medium. The model is in continuous development. Some of the routines have been extensively tested while others are still experimental. 
@@ -43,7 +45,47 @@ Of course! The development and improvement of the model is highly encouraged. Al
 
 ## How do I compile the code?
 
-All you need is a FORTRAN 90 compatible compiler. For example, gnu's f95 compiler available on most linux/unix platforms (including the ubuntu app in Windows 10) will generate an executable from the source code. Simply type `f95 *.f90 -o mc`.
+The following instructions explain how to compile the source code using the open-source `gfortran` compiler, which is a common choice for Fortran projects.
+
+### Prerequisites
+
+You must have `gfortran` (or a compatible Fortran 90 compiler) installed. You can check by running:
+```sh
+gfortran --version
+```
+
+### Understanding Dependencies
+
+The source code uses Fortran `MODULE`s to share procedures and data. Files that define modules must be compiled before the files that `USE` them. The module definition files in this project are:
+- `global.f90`
+- `modules.f90`
+
+### Compilation Steps
+
+The process involves compiling source files (`.f90`) into intermediate object files (`.o`) and then linking them to create the final executable named `aomc`.
+
+1.  **Compile Module Files**:
+    This command creates `global.o`, `modules.o`, and the necessary module interface (`.mod`) files.
+    ```sh
+    gfortran -c global.f90 modules.f90
+    ```
+
+2.  **Compile Remaining Source Files**:
+    This compiles the rest of the code, which depends on the modules from the previous step.
+    ```sh
+    gfortran -c geom2.f90 interface.f90 light_internal.f90 logbin.f90 mc.f90 vsf.f90 water.f90
+    ```
+
+3.  **Link Object Files**:
+    This links all the object files to create the final `aomc` executable.
+    ```sh
+    gfortran -o aomc *.o
+    ```
+4. **Clean up**:
+    You can clean up the intermediate files with:
+    ```sh
+    rm *.o *.mod
+    ```
 
 ## Is there support?
 
