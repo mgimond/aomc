@@ -1,0 +1,86 @@
+# Compiling the AOMC Fortran Code
+
+This document provides instructions on how to compile the Fortran source code for the AOMC project using the `gfortran` compiler. All source code is located in the `src/` directory.
+
+The compilation should be run from the root directory of the project.
+
+## 1. Automated Build Script (Recommended)
+
+A `build.sh` script is provided to automate the entire compilation process. To compile the model, simply run the script from the project's root directory:
+
+```sh
+./build.sh
+```
+This will compile the necessary files in order, create the `aomc` executable in the root directory, and clean up the intermediate object (`.o`) and module (`.mod`) files.
+
+## 2. Manual Compilation
+
+If you prefer to compile the files manually, follow these steps from the root directory.
+
+### Step 2.1: Compile Module Files
+
+First, compile the files that define the modules. This will create `global.o`, `modules.o`, and the corresponding `.mod` files in your root directory.
+
+```sh
+gfortran -c src/global.f90 src/modules.f90
+```
+
+### Step 2.2: Compile Remaining Source Files
+
+Next, compile the rest of the source files. The compiler will use the `.mod` files created in the previous step.
+
+```sh
+gfortran -c src/geom2.f90 src/interface.f90 src/light_internal.f90 src/logbin.f90 src/mc.f90 src/vsf.f90 src/water.f90
+```
+
+### Step 2.3: Link Object Files
+
+Finally, link all the generated object files (`.o`) together to create the executable named `aomc` in the root directory.
+
+```sh
+gfortran -o aomc *.o
+```
+
+### Step 2.4: Clean Up (Optional)
+
+You can remove the intermediate files.
+
+```sh
+rm *.o *.mod
+```
+
+## 3. `build.sh` Script Content
+
+For reference, this is the content of the `build.sh` script:
+
+```sh
+#!/bin/bash
+# A script to compile the AOMC Fortran project.
+
+# Exit immediately if a command exits with a non-zero status.
+set -e
+
+# Compiler
+FC=gfortran
+
+# List of source files, now in the src/ directory
+MODULE_FILES="src/global.f90 src/modules.f90"
+SOURCE_FILES="src/geom2.f90 src/interface.f90 src/light_internal.f90 src/logbin.f90 src/mc.f90 src/vsf.f90 src/water.f90"
+ALL_OBJECTS=""
+
+echo "Compiling modules..."
+$FC -c $MODULE_FILES
+ALL_OBJECTS+=$(basename --multiple $MODULE_FILES | sed 's/\.f90/\.o/g')
+
+echo "Compiling other sources..."
+$FC -c $SOURCE_FILES
+ALL_OBJECTS+=" "$(basename --multiple $SOURCE_FILES | sed 's/\.f90/\.o/g')
+
+echo "Linking..."
+$FC -o aomc $ALL_OBJECTS
+
+echo "Cleaning up intermediate files..."
+rm *.o *.mod
+
+echo "Build complete! Executable 'aomc' is ready in the root directory."
+```

@@ -1,0 +1,40 @@
+![AOMC Illustration (Created by N.A.G.)](./aomc2_inter.jpg)
+
+## What is the AOMC model? 
+
+The Aquatic Optics Monte Carlo (AOMC) model is an open-source tool designed to simulate the propagation of light in an optically shallow, vertically heterogeneous aquatic medium. It was originally developed in 2003 using strict FORTRAN 90 standards to ensure broad compatibility across different computing platforms.
+
+For more on the project's history, author, and citation guidelines, please see the **[About page](about.qmd)**.
+
+-----------
+
+[AOMC GitHub Repository](https://github.com/mgimond/aomc)
+
+## What will the model simulate? 
+
+The model simulates radiometric quantities (as measured by radiometers)  such as: 
+
+*  Upwelling and downwelling scalar and planar irradiances (Euo, Edo, Eu and Ed)
+*  Radiance
+*  Mean cosines
+*  Shape factors (as used in the two-flow or two-stream model)
+*  Surface Albedo 
+
+A detailed description of the underlying radiative transfer theory can be found in the [Model Theory document](input_docs/theory.qmd).
+
+## How do I compile the code?
+
+Compilation instructions can be found on the [Compilation](input_docs/compilation.qmd) page.
+
+## Input File Documentation
+
+The AOMC model is configured through a series of plain text input files. Detailed documentation for the format of each file can be found below:
+
+*   [amc.inp](input_docs/amc_inp.qmd): Main model configuration.
+*   [abs.inp](input_docs/abs_inp.qmd): Specific absorption coefficients.
+*   [scat.inp](input_docs/scat_inp.qmd): Specific scattering coefficients.
+*   [conc.inp](input_docs/conc_inp.qmd): Constituent concentrations by layer.
+*   [spf.inp](input_docs/spf_inp.qmd): Scattering phase function definitions.
+*   [lambbot.inp](input_docs/lambbot_inp.qmd): Wavelength and bottom reflectance properties.
+*   [difcol.inp](input_docs/difcol_inp.qmd): Direct vs. diffuse light fractions (used when `lsource=0`).
+*   [skydist.inp](input_docs/skydist_inp.qmd): Tabulated sky radiance data (used when `lsource=1`).

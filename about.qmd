@@ -1,0 +1,32 @@
+---
+title: "About the AOMC Project"
+---
+
+## About the Model
+
+The Aquatic Optics Monte Carlo (AOMC) model is an open-source tool designed to simulate the propagation of light in an optically shallow, vertically heterogeneous aquatic medium. It was originally developed in 2003 using strict FORTRAN 90 standards to ensure broad compatibility across different computing platforms.
+
+The primary motivation behind AOMC was to provide researchers and students with a flexible and transparent tool for exploring radiative transfer theory in aquatic environments. While the model has not been in active development since 2003, its core physics and Monte Carlo engine remain a valuable resource for educational and research purposes.
+
+## Author
+
+The AOMC model was created and is maintained by **Manuel Gimond**.
+
+*   **GitHub Profile:** [github.com/mgimond](https://github.com/mgimond)
+
+## How to Cite
+
+If you use this model or its source code in your research, please cite the following publication:
+
+>Gimond M., 2004. *Description and verification of an aquatic optics Monte Carlo model*. Environmental Modelling and Software, vol 19, n. 12, pp 1065-1076.
+
+
+## License
+
+The AOMC source code is open source and available under the **MIT License**. You can view the full license file [here](LICENSE).
+
+## Contact and Support
+
+Please note that this project is not actively maintained. Support is very limited.
+
+For bug reports, questions, or suggestions, the preferred method is to open an issue on the [AOMC GitHub repository's issue tracker](https://github.com/mgimond/aomc/issues).
