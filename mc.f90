@@ -16,14 +16,15 @@ PROGRAM mc
   !     Date     Programmer           Description of change
   !     ====     ==========           =====================
   !  3/26/2003   Manuel Gimond        Original code
-  !  11/20/2025  Manuel Gimond		  Added routine to generate a non-surfer formatted grid output file
+  !  11/20/2025  Manuel Gimond		    Added routine to generate a non-surfer formatted grid output file
   !  12/02/2025  Manuel Gimond        Added missing PHI column in the rad.out output
   !  12/02/2025  Manuel Gimond        Allow for more than 4 PHI columns in rad.out output
+  !  12/05/2025  Manuel Gimond        Update license
   !
   ! License/Disclaimer
   ! ------------------
-  ! The software is distributed under the Open Source Definition
-  ! http://www.opensource.org/osd.html
+  ! The AOMC source code is open source and available under the MIT License.
+  ! Copyright (c) 2003-2025 Manuel Gimond
   !
   ! THE AUTHOR MAKES NO WARRANTY (EXPRESSED OR IMPLIED) AS TO THE
   ! USEFULNESS OF THE SOFTWARE AND ITS DOCUMENTION AND ASSUMES NO
