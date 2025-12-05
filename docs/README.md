@@ -43,6 +43,19 @@ Yes! It follows the Open Source Definition (see https://opensource.org/osd.html)
 
 Of course! The development and improvement of the model is highly encouraged. All that is asked is that proper credit(s) be given where credit is due. 
 
+## Input File Documentation
+
+The AOMC model is configured through a series of plain text input files. Detailed documentation for the format of each file can be found below:
+
+*   [amc.inp](amc_inp_documentation.md): Main model configuration.
+*   [abs.inp](abs_inp_documentation.md): Specific absorption coefficients.
+*   [scat.inp](scat_inp_documentation.md): Specific scattering coefficients.
+*   [conc.inp](conc_inp_documentation.md): Constituent concentrations by layer.
+*   [spf.inp](spf_inp_documentation.md): Scattering phase function definitions.
+*   [lambbot.inp](lambbot_inp_documentation.md): Wavelength and bottom reflectance properties.
+*   [difcol.inp](difcol_inp_documentation.md): Direct vs. diffuse light fractions (used when `lsource=0`).
+*   [skydist.inp](skydist_inp_documentation.md): Tabulated sky radiance data (used when `lsource=1`).
+
 ## How do I compile the code?
 
 The following instructions explain how to compile the source code using the open-source `gfortran` compiler, which is a common choice for Fortran projects.

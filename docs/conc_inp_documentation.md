@@ -1,0 +1,36 @@
+# Concentration Input Parameters (`conc.inp`)
+
+This document describes the format for the `conc.inp` file, which specifies the concentrations of various water quality constituents, the refractive index of the medium, and the top boundary depth for each defined layer in the AOMC model.
+
+## File Format
+
+The structure of the `conc.inp` file is strict and must conform to the following rules for the model to parse it correctly:
+
+1.  **Number of Layers**: The very first value in the file must be an integer representing the total number of concentration-dependent layers. This number **must** match the value specified for parameter **13) # of concentration dependent layers** in the `amc.inp` file.
+
+2.  **Layer Data**: Following the number of layers, the file must contain one line of data for each layer. Each line comprises a series of floating-point values:
+    *   **Concentrations**: A series of values representing the concentrations of each system constituent. The number of concentration values on each line **must** match the value specified for parameter **3) number of system constituents** in the `amc.inp` file.
+    *   **Refractive Index**: Immediately following the constituent concentrations, a single value representing the refractive index of the medium for that layer.
+    *   **Top Boundary Depth**: Finally, a single value representing the depth of the top boundary of that layer.
+
+    **Data Format**: The numerical values are read in free-format (list-directed). This means the numbers should be separated by spaces or commas. They do not need to be aligned in fixed columns, as long as each line contains the correct total number of values (`[number of constituents] + 2`).
+
+3.  **Additional Information**: Any text or data placed after the layer data lines is ignored by the model. This space can be used for comments, notes, or metadata, as shown in the example below.
+
+## Example
+
+Here is a sample `conc.inp` file configured for **2 layers** and **3 system constituents**.
+
+```
+2
+1.0 0.05 0.01 1.340 0.0
+0.8 0.10 0.02 1.340 1.0
+
+--- NOTES ---
+This NOTES section is not read by the AOMC model.
+Each line of data (after the first line) represents a layer.
+For each layer, the values are:
+[Conc. Constituent 1] [Conc. Constituent 2] [Conc. Constituent 3] [Refractive Index] [Top Boundary Depth]
+
+Depths are in meters.
+```

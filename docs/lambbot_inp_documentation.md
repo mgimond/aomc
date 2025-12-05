@@ -1,0 +1,75 @@
+# Wavelength and Bottom Reflectance Input (`lambbot.inp`)
+
+This document describes the format for the `lambbot.inp` file. This file is crucial for defining the simulation's wavebands and the reflective properties of the bottom boundary (and an optional target).
+
+## File Format
+
+The structure of the `lambbot.inp` file depends on whether a bottom target is enabled via parameter **16) Bottom target: NO[0],YES[1]** in the `amc.inp` file.
+
+The data is read in free-format (list-directed), meaning numerical values should be separated by spaces or commas.
+
+### 1. Without a Bottom Target (`targbot = 0`)
+
+If no target is specified, the file has the following structure:
+
+*   **First Line**: An integer representing the total number of wavebands. This **must** match parameter **18) Number of wavebands** in `amc.inp`.
+*   **Subsequent Lines**: One line for each waveband, containing **3 values**:
+    1.  `Wavelength`: The actual wavelength value (e.g., in nanometers).
+    2.  `Bottom Reflectance`: The fraction of photons that are reflected by the bottom boundary (a value from 0.0 to 1.0).
+    3.  `Bottom Specular Fraction`: The fraction of the reflected photons that are reflected specularly (mirror-like). A value of 1.0 is purely specular, 0.0 is purely diffuse (Lambertian).
+
+### 2. With a Bottom Target (`targbot = 1`)
+
+If a target is specified, the file requires additional information:
+
+*   **First Line**: An integer representing the total number of wavebands (must match `amc.inp`).
+*   **Subsequent Lines**: One line for each waveband, containing **5 values**:
+    1.  `Wavelength`: The actual wavelength value.
+    2.  `Bottom Reflectance`: Reflectance of the general bottom area (outside the target).
+    3.  `Bottom Specular Fraction`: Specular fraction for the general bottom.
+    4.  `Target Reflectance`: Reflectance of the target area.
+    5.  `Target Specular Fraction`: Specular fraction for the target.
+
+## Specular vs. Diffuse Reflection Logic
+
+When a photon strikes the bottom boundary, the model determines its fate using the parameters from this file in a two-step process:
+
+1.  **Reflection vs. Absorption**: A random number (from 0 to 1) is generated. If this number is less than or equal to the surface's `Reflectance` value (e.g., `Bottom Reflectance`), the photon is reflected. Otherwise, it is absorbed.
+
+2.  **Specular vs. Diffuse**: If the photon is reflected, a **second** random number is generated.
+    *   If this second random number is less than or equal to the surface's `Specular Fraction` value (e.g., `Bottom Specular Fraction`), the reflection is **specular** (mirror-like), and the photon's angle of incidence is perfectly inverted.
+    *   If the random number is greater than the `Specular Fraction`, the reflection is **diffuse** (Lambertian), and the photon is scattered in a new, random upward direction.
+
+## Examples
+
+### Example 1: No Target (`targbot = 0`)
+
+Here is a sample `lambbot.inp` for 4 wavebands without a bottom target.
+
+```
+4
+400.0   0.10   0.5
+500.0   0.15   0.4
+600.0   0.20   0.3
+700.0   0.25   0.2
+
+--- NOTES ---
+This section is not read by the model.
+Format: [Wavelength] [Bottom Reflectance] [Bottom Specular Fraction]
+```
+
+### Example 2: With Target (`targbot = 1`)
+
+Here is a sample `lambbot.inp` for 4 wavebands with a bottom target enabled.
+
+```
+4
+400.0   0.10   0.5   0.8   1.0
+500.0   0.15   0.4   0.7   0.9
+600.0   0.20   0.3   0.6   0.8
+700.0   0.25   0.2   0.5   0.7
+
+--- NOTES ---
+This section is not read by the model.
+Format: [Wavelength] [Bottom Reflectance] [Bottom Specular] [Target Reflectance] [Target Specular]
+```
