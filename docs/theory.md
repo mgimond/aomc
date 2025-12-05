@@ -1,0 +1,79 @@
+# AOMC: Radiative Transfer Theory and Model Implementation
+
+This document provides a summary of the theoretical basis for the AOMC model.
+
+## 1. Theory of Radiative Transfer
+
+The propagation of light through an aquatic medium is governed by the Radiative Transfer Equation (RTE). The RTE accounts for the various ways light can be absorbed and scattered as it interacts with water and its dissolved and particulate constituents. The key to solving the RTE lies in characterizing the Inherent Optical Properties (IOPs) of the medium. IOPs are properties that depend only on the substances in the medium, not on the ambient light field.
+
+### Inherent Optical Properties (IOPs)
+
+The primary IOPs that determine the fate of light are:
+
+#### Absorption and Scattering
+*   **Absorption Coefficient ($a$):** The fraction of radiant energy absorbed by the medium per unit path length (units: m⁻¹).
+*   **Scattering Coefficient ($b$):** The fraction of radiant energy scattered by the medium per unit path length (units: m⁻¹).
+
+These two properties combine to form the **beam attenuation coefficient ($c$)**, which represents the total loss of energy from a light beam due to both absorption and scattering:
+$$
+c(\lambda) = a(\lambda) + b(\lambda)
+$$
+
+The **single-scattering albedo ($\omega_0$)** describes the probability that a photon will be scattered rather than absorbed upon interaction:
+$$
+\omega_0(\lambda) = \frac{b(\lambda)}{c(\lambda)}
+$$
+
+#### Additivity of IOPs
+For a medium containing multiple constituents (e.g., pure water, phytoplankton, sediments), the bulk IOPs are the sum of the contributions from each constituent. The contribution of each constituent is its concentration ($C_i$) multiplied by its specific absorption or scattering coefficient ($a_i^*$ or $b_i^*$).
+
+The bulk absorption coefficient is given by:
+$$ a(\lambda) = a_w(\lambda) + \sum_{i=1}^{N} a_i^*(\lambda)C_i $$
+The bulk scattering coefficient is given by:
+$$ b(\lambda) = b_w(\lambda) + \sum_{i=1}^{N} b_i^*(\lambda)C_i $$
+where the subscript $w$ refers to pure water and $i$ refers to the i-th constituent.
+
+#### The Volume Scattering Function (VSF)
+While the scattering coefficient $b$ describes the total amount of scattering, the **Volume Scattering Function (VSF)**, $\beta(\psi, \lambda)$, describes the angular distribution of the scattered light. It is defined as the radiant intensity scattered from a small volume element in a given direction $\psi$ per unit of incident irradiance (units: m⁻¹ sr⁻¹).
+
+The scattering coefficient $b$ is the integral of the VSF over all solid angles:
+$$ b(\lambda) = 2\pi \int_{0}^{\pi} \beta(\psi, \lambda) \sin(\psi) d\psi $$
+A normalized version of the VSF, known as the **scattering phase function ($\tilde{\beta}$)**, gives the probability distribution of a scattering event at a given angle:
+$$ \tilde{\beta}(\psi, \lambda) = \frac{\beta(\psi, \lambda)}{b(\lambda)} $$
+
+## 2. The AOMC Model Implementation
+
+The AOMC model uses the **Monte Carlo method** to solve the RTE. This statistical approach simulates the individual life histories of a large number of photons. By tracking the fate of each photon, the model reconstructs the macroscopic light field (e.g., radiance and irradiance) throughout the water body.
+
+The life cycle of a single photon is simulated as follows:
+
+### Photon Initialization
+*   A photon is generated above the air-water interface. Its initial direction is determined by the sky radiance distribution, which can be either a simple model with direct and diffuse components (`difcol.inp`) or a tabulated distribution from a file (`skydist.inp`).
+
+### The Air-Water Interface
+*   When the photon strikes the surface, **Fresnel's equations** are used with a random number to determine if it is reflected or transmitted into the water.
+*   If the photon is transmitted, **Snell's Law** is used to calculate its new, refracted angle of travel within the water.
+
+### Path Length Determination
+*   The distance the photon travels between interactions is its optical path length. This step size, $\Delta l$, is determined probabilistically using the beam attenuation coefficient $c(\lambda)$ and a random number, $\xi_1$, uniformly distributed between 0 and 1:
+    $$ \Delta l = -\frac{\ln(\xi_1)}{c(\lambda)} $$
+
+### Absorption or Scattering
+*   After traveling the distance $\Delta l$, the photon interacts with the medium. A decision is made to either absorb or scatter the photon.
+*   A new random number, $\xi_2$, is generated and compared to the single-scattering albedo, $\omega_0(\lambda)$.
+    *   If $\xi_2 \le \omega_0(\lambda)$, the photon is **scattered**.
+    *   If $\xi_2 > \omega_0(\lambda)$, the photon is **absorbed**, and its simulation is terminated.
+
+### Scattering Process
+*   If the photon is scattered, its direction must change.
+    1.  **Select Constituent:** The model first determines which constituent particle scattered the photon. This is a random choice weighted by the relative scattering contribution of each constituent at that wavelength.
+    2.  **Select New Angle:** The model then uses the cumulative scattering phase function for that specific particle (from `spf.inp`) as a probability table. A new random number, $\xi_3$, is generated to select a new polar scattering angle, $\theta$. A uniformly distributed random number determines the azimuthal scattering angle, $\phi$.
+
+### Boundary Interactions and Termination
+The photon's life ends when one of the following occurs:
+1.  It is **absorbed** within the water column.
+2.  It scatters upward and passes back out through the **air-water interface**.
+3.  It hits a **side boundary** of the model domain.
+4.  It strikes the **bottom boundary**. At the bottom, a random number is compared to the bottom reflectance ($R_b$) from `lambbot.inp`.
+    *   If absorbed, the photon is terminated.
+    *   If reflected, another random number determines if the reflection is specular (mirror-like) or diffuse (Lambertian), and the photon's journey continues in an upward direction.
