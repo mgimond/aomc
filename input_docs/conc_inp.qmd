@@ -1,15 +1,17 @@
 # Concentration Input Parameters (`conc.inp`)
 
-This document describes the format for the `conc.inp` file, which specifies the concentrations of various water quality constituents, the refractive index of the medium, and the top boundary depth for each defined layer in the AOMC model.
+This document describes the format for the `conc.inp` file, which specifies the concentrations of various water quality constituents, the refractive index of the medium, and the top boundary depth for each defined layer in the AOMC model. 
+
+The weight units (e.g., grams, milligrams, micrograms) used for constituent concentrations in `conc.inp` must precisely match the weight units specified for the specific absorption coefficients in `abs.inp` and specific scattering coefficients in `scat.inp`. For example, $mg/m^3$ or $g/m^3$.
 
 ## File Format
 
 The structure of the `conc.inp` file is strict and must conform to the following rules for the model to parse it correctly:
 
-1.  **Number of Layers**: The very first value in the file must be an integer representing the total number of concentration-dependent layers. This number **must** match the value specified for parameter **13) # of concentration dependent layers** in the `amc.inp` file.
+1.  **Number of Layers**: The very first value in the file must be an integer representing the total number of concentration-dependent layers. This number **must** match the value specified for parameter `13) # of concentration dependent layers` in the `amc.inp` file.
 
 2.  **Layer Data**: Following the number of layers, the file must contain one line of data for each layer. Each line comprises a series of floating-point values:
-    *   **Concentrations**: A series of values representing the concentrations of each system constituent. The number of concentration values on each line **must** match the value specified for parameter **3) number of system constituents** in the `amc.inp` file.
+    *   **Concentrations**: A series of values representing the concentrations of each system constituent. The number of concentration values on each line **must** match the value specified for parameter `3) number of system constituents` in the `amc.inp` file.
     *   **Refractive Index**: Immediately following the constituent concentrations, a single value representing the refractive index of the medium for that layer.
     *   **Top Boundary Depth**: Finally, a single value representing the depth of the top boundary of that layer.
 

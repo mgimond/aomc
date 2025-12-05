@@ -2,7 +2,7 @@
 
 This document describes the format for the `skydist.inp` file, which allows the user to provide a custom, tabulated sky radiance distribution for the model's light source.
 
-**Important**: This file is only read by the model if parameter **2) Light source from model(0) or file(1)** in `amc.inp` is set to `1`.
+**Important**: This file is only read by the model if parameter `2) Light source from model(0) or file(1)` in `amc.inp` is set to `1`.
 
 ## File Format
 
@@ -36,18 +36,18 @@ This format allows for a sparse representation of the sky; you only need to prov
 
 ### Internal Processing
 
-After reading this file, the AOMC model processes the data for each wavelength by:
+After reading this file, the AOMC model processes the data for each wavelength by: 
+
 1.  Summing all radiance values for that wavelength.
 2.  Normalizing the values so they represent a probability distribution.
 3.  Multiplying this distribution by the total number of iterations (from `amc.inp`) to determine how many photons should be initiated from each specific sky patch.
 
 ### Wavelength Matching Logic
 
-It is not necessary for the wavelengths listed in this file to exactly match the simulation wavebands defined in `lambbot.inp`. The model **does not interpolate** the sky data.
+It is not necessary for the wavelengths listed in this file to exactly match the simulation wavebands defined in `lambbot.inp`. The model **does not interpolate** the sky data. Instead, for each simulation waveband, the model performs a **nearest-neighbor search**. It identifies the single, numerically closest wavelength provided in `skydist.inp` and uses the complete sky radiance distribution from that single entry for the entire simulation run of that waveband.
 
-Instead, for each simulation waveband, the model performs a **nearest-neighbor search**. It identifies the single, numerically closest wavelength provided in `skydist.inp` and uses the complete sky radiance distribution from that single entry for the entire simulation run of that waveband.
+For example, if `skydist.inp` contains data for 500nm and 600nm, and the simulation is running for wavebands at 520nm, 540nm, and 580nm: 
 
-For example, if `skydist.inp` contains data for 500nm and 600nm, and the simulation is running for wavebands at 520nm, 540nm, and 580nm:
 *   The 520nm run will use the sky data for 500nm.
 *   The 540nm run will also use the sky data for 500nm (since 540 is closer to 500 than to 600).
 *   The 580nm run will use the sky data for 600nm.

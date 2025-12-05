@@ -70,7 +70,8 @@ The life cycle of a single photon is simulated as follows:
     2.  **Select New Angle:** The model then uses the cumulative scattering phase function for that specific particle (from `spf.inp`) as a probability table. A new random number, $\xi_3$, is generated to select a new polar scattering angle, $\theta$. A uniformly distributed random number determines the azimuthal scattering angle, $\phi$.
 
 ### Boundary Interactions and Termination
-The photon's life ends when one of the following occurs:
+The photon's life ends when one of the following occurs: 
+
 1.  It is **absorbed** within the water column.
 2.  It scatters upward and passes back out through the **air-water interface**.
 3.  It hits a **side boundary** of the model domain.
