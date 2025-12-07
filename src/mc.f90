@@ -1,4 +1,4 @@
-!     Last change:  MG   02 Dec 2025    20:25
+!     Last change:  MG   05 Dec 2025    
 PROGRAM mc
 
   ! Purpose:
@@ -20,6 +20,8 @@ PROGRAM mc
   !  12/02/2025  Manuel Gimond        Added missing PHI column in the rad.out output
   !  12/02/2025  Manuel Gimond        Allow for more than 4 PHI columns in rad.out output
   !  12/05/2025  Manuel Gimond        Update license
+  !  12/05/2025  Manuel Gimond        Replaced custom RNG with intrinsic RNG in modules.f90
+  !  12/07/2025  Manuel Gimond		  Change recording of output aop.out and rad.out
   !
   ! License/Disclaimer
   ! ------------------
@@ -119,6 +121,7 @@ PROGRAM mc
   REAL,ALLOCATABLE,DIMENSION(:)  :: norma   !Value used to normalize the irradiance
                                             ! 'quartet'
   REAL,ALLOCATABLE,DIMENSION(:)::wavelength !Wavelength associated with photon
+  REAL,ALLOCATABLE,DIMENSION(:,:,:,:):: polar_ld, polar_lu
 
   REAL      :: scratch     !used to read unused data
   REAL      :: randradius  !Randomly generated radius
@@ -133,7 +136,7 @@ PROGRAM mc
        '       Aquatic Optics Monte Carlo Model            ',&
        '       A       O      M     C                      ',&
        '                                                   ',&
-       '       Version 1.0                                 ',&
+       '       Version 1.2                                 ',&
        '                                                   ',&
        '       Original Author: Manuel Gimond              ',&
        '==================================================='
@@ -1819,6 +1822,54 @@ PROGRAM mc
 
      END IF
 
+     ! - polar_ld -
+
+     IF (numgrid == 0) THEN
+
+        ALLOCATE (polar_ld(lambda,0:0,0:0,-1:numlogly) , STAT=astat)
+     ELSE
+
+        sidebound = NINT( (numgrid -1 ) / 2.)
+        ALLOCATE (polar_ld( lambda,-sidebound : sidebound,-sidebound : sidebound,  &
+             -1:numlogly) , STAT=astat)
+
+     END IF
+
+     IF(astat/=0) THEN
+
+        WRITE(*,*) 'Error: array ''polar_ld'' not allocated!'
+        erro = .TRUE.
+
+     ELSE
+
+        polar_ld(:,:,:,:) = 0
+
+     END IF
+
+     ! - polar_lu -
+
+     IF (numgrid == 0) THEN
+
+        ALLOCATE (polar_lu(lambda,0:0,0:0,-1:numlogly) , STAT=astat)
+     ELSE
+
+        sidebound = NINT( (numgrid -1 ) / 2.)
+        ALLOCATE (polar_lu( lambda,-sidebound : sidebound,-sidebound : sidebound,  &
+             -1:numlogly) , STAT=astat)
+
+     END IF
+
+     IF(astat/=0) THEN
+
+        WRITE(*,*) 'Error: array ''polar_lu'' not allocated!'
+        erro = .TRUE.
+
+     ELSE
+
+        polar_lu(:,:,:,:) = 0
+
+     END IF
+
      ALLOCATE (norma(lambda), STAT=astat)
 
      IF(astat/=0) THEN
@@ -1889,32 +1940,29 @@ PROGRAM mc
         IF (polar == 1 ) THEN
 
            DO ii = -sidebound , sidebound
-
               DO jj =  -sidebound , sidebound
-
                  DO kk = -1 , numlogly 
 
                     IF(angint == 1) THEN
+                       polar_ld(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,1,:)) ) / ( 2 * pi * (1 - COS( nalpha )) )
+                       polar_lu(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,alphaint,:)) ) / ( 2 * pi * (1 - COS( nalpha )) )
 
-                       rad( lam,ii,jj,kk,1,: ) = REAL( SUM( n(lam,ii,jj,kk,1,:)) ) /    &    
-                            ( 2 * pi * (1 - COS( nalpha )) )                  
-                       rad( lam,ii,jj,kk,alphaint,: ) = REAL( SUM( n(lam,ii,jj,kk,alphaint,:)) ) /    &   
-                            ( 2 * pi * (1 - COS( nalpha )) )
-
+                       rad( lam,ii,jj,kk,1,: ) = REAL( n(lam,ii,jj,kk,1,:) ) / ( nphi * (1 - COS( nalpha )) )
+                       rad( lam,ii,jj,kk,alphaint,: ) = REAL( n(lam,ii,jj,kk,alphaint,:) ) / ( nphi * (1 - COS( nalpha )) )
                     ELSE
+                       polar_ld(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,1,:)) ) / &
+                            ( 2 * PI / ( ( alphaint / 2 - 1 )*phiint + 1) )
+                       polar_lu(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,alphaint,:)) ) / &
+                            ( 2 * PI / ( ( alphaint / 2 - 1 )*phiint + 1) )
 
-                       rad( lam,ii,jj,kk,1,: ) = REAL( SUM( n(lam,ii,jj,kk,1,:)) ) /    &    
-                            (  2 * PI / ( ( alphaint / 2 - 1 )*phiint + 1))           
-
-                       rad( lam,ii,jj,kk,alphaint,: ) = REAL( SUM( n(lam,ii,jj,kk,alphaint,:)) ) /    &   
-                            (  2 * PI / ( ( alphaint / 2 - 1 )*phiint + 1))
-
+                       rad( lam,ii,jj,kk,1,: ) = REAL( n(lam,ii,jj,kk,1,:) ) / &
+                            ( (2 * PI / ( ( alphaint / 2 - 1 )*phiint + 1)) / phiint )
+                       rad( lam,ii,jj,kk,alphaint,: ) = REAL( n(lam,ii,jj,kk,alphaint,:) ) / &
+                            ( (2 * PI / ( ( alphaint / 2 - 1 )*phiint + 1)) / phiint )
                     END IF
 
                  END DO
-
               END DO
-
            END DO
 
         END IF
@@ -2033,32 +2081,33 @@ PROGRAM mc
         !                   Write AOP out to file
         ! ------------------------------------------------------------
 
-        SELECT CASE(ios)
-
-        CASE(0)
-
-           WRITE(11,'(12(A12,2x))')'depth (m)',' Eu ',' Ed ',' E ', ' R* ',' Eou ',     &
-                ' Eod ' , ' meancosUP ',' meancosDown',              &
-                ' meancos ', 'rd ',' rup'
-
-           DO kk = -1 , numlogly
-
-              WRITE(11,'(12(F12.6,2x))') layval(kk),                                   &
-                   SUM( eu(lam,:,:,kk) ), SUM( ed(lam,:,:,kk) ),          &
-                   (SUM( ed(lam,:,:,kk) ) - SUM( eu(lam,:,:,kk))),        & ! E
-                   SUM( eu(lam,:,:,kk) )/ SUM( ed(lam,:,:,kk) ),          & ! R
-                   SUM( eou(lam,:,:,kk) ),SUM( eod(lam,:,:,kk) ),         & 
-                   SUM( eu(lam,:,:,kk))/ SUM(eou(lam,:,:,kk)  ),          & !meancos up
-                   SUM( ed(lam,:,:,kk))/ SUM( eod(lam,:,:,kk) ),          & !meancos down
-                   (SUM( ed(lam,:,:,kk) ) - SUM( eu(lam,:,:,kk))) /       &
-                   ( SUM( eou(lam,:,:,kk) ) + SUM( eod(lam,:,:,kk) )),    & ! meancos
-                   bdown(lam,kk)/fdown(lam,kk) / ( REAL(totalback(lam,kk)) /  & ! Down shapefactor
-                   REAL(totalfwd(lam,kk) + totalback(lam,kk))) ,          &
-                   bup(lam,kk)/fup(lam,kk) / ( REAL(totalback(lam,kk)) /      & ! Up shapefactor
-                   REAL(totalfwd(lam,kk) + totalback(lam,kk)))
-
-           END DO
-
+                SELECT CASE(ios)
+        
+                CASE(0)
+        
+                   WRITE(11,'(14(A12,2x))')'depth (m)',' Eu ',' Ed ',' E ', ' R* ',' Eou ',     &
+                        ' Eod ' , ' meancosUP ',' meancosDown',              &
+                        ' meancos ', 'rd ',' rup', 'Ld', 'Lu'
+        
+                   DO kk = -1 , numlogly
+        
+                      WRITE(11,'(14(F12.7,2x))') layval(kk),                                   &
+                           SUM( eu(lam,:,:,kk) ), SUM( ed(lam,:,:,kk) ),          &
+                           (SUM( ed(lam,:,:,kk) ) - SUM( eu(lam,:,:,kk))),        & ! E
+                           SUM( eu(lam,:,:,kk) )/ SUM( ed(lam,:,:,kk) ),          & ! R
+                           SUM( eou(lam,:,:,kk) ),SUM( eod(lam,:,:,kk) ),         &
+                           SUM( eu(lam,:,:,kk))/ SUM(eou(lam,:,:,kk)  ),          & !meancos up
+                           SUM( ed(lam,:,:,kk))/ SUM( eod(lam,:,:,kk) ),          & !meancos down
+                           (SUM( ed(lam,:,:,kk) ) - SUM( eu(lam,:,:,kk))) /       &
+                           ( SUM( eou(lam,:,:,kk) ) + SUM( eod(lam,:,:,kk) )),    & ! meancos
+                           bdown(lam,kk)/fdown(lam,kk) / ( REAL(totalback(lam,kk)) /  & ! Down shapefactor
+                           REAL(totalfwd(lam,kk) + totalback(lam,kk))) ,          &
+                           bup(lam,kk)/fup(lam,kk) / ( REAL(totalback(lam,kk)) /      & ! Up shapefactor
+                           REAL(totalfwd(lam,kk) + totalback(lam,kk))),             &
+                           SUM(polar_ld(lam,:,:,kk)) / norma(lam),                  &
+                           SUM(polar_lu(lam,:,:,kk)) / norma(lam)
+        
+                   END DO
            WRITE(11,*)'* The above water reflectance is actually an albedo calculation'
 
         CASE DEFAULT
@@ -2345,9 +2394,9 @@ PROGRAM mc
               WRITE(14,'(F12.6,2X,6(F13.7,1X))') wavelength(lam), &
                    SUM( eu(lam,:,:,0)),SUM( ed(lam,:,:,0)),      &
                    SUM(eu(lam,:,:,0))/SUM( ed(lam,:,:,0)),       &
-                   SUM(rad(lam,:,:,0,alphaint,1)) / norma(lam),  & 
-                   SUM( ed(lam,:,:,-1)),                         &      
-                   SUM(rad(lam,:,:,-1,alphaint,1)) / norma(lam)
+                   SUM(polar_lu(lam,:,:,0)) / norma(lam),  &
+                   SUM( ed(lam,:,:,-1)),                         &
+                   SUM(polar_lu(lam,:,:,-1)) / norma(lam)
 
            END DO
 
@@ -2407,6 +2456,24 @@ PROGRAM mc
   IF (astat /= 0) THEN
 
      WRITE(*,*)'ERROR: problem in array ''ed'' deallocation'
+     erro = .TRUE.
+
+  END IF
+
+  DEALLOCATE(polar_ld,STAT=astat)
+
+  IF (astat /= 0) THEN
+
+     WRITE(*,*)'ERROR: problem in array ''polar_ld'' deallocation'
+     erro = .TRUE.
+
+  END IF
+
+  DEALLOCATE(polar_lu,STAT=astat)
+
+  IF (astat /= 0) THEN
+
+     WRITE(*,*)'ERROR: problem in array ''polar_lu'' deallocation'
      erro = .TRUE.
 
   END IF

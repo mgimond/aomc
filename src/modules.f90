@@ -36,7 +36,6 @@ CONTAINS
                        
    FUNCTION rand ()
 
-      USE rand_global
       REAL :: rand
 
 ! This  random number generator combines:  
@@ -46,21 +45,22 @@ CONTAINS
 !  Overall period>2^123;  Default seeds x,y,z,w.                        
 !  Set your own seeds with statement i=kisset(ix,iy,iz,iw).             
 !     
-      xseed = 69069 * xseed + 1327217885 
-      yseed = m (m (m (yseed, 13), - 17), 5) 
-      zseed = 18000 * IAND (zseed, 65535) + ISHFT (zseed, - 16) 
-      wseed = 30903 * IAND (wseed, 65535) + ISHFT (wseed, - 16) 
-      rand = ABS(xseed + yseed + ISHFT (zseed, 16) + wseed)/2147483648. !modified by MG
+!      xseed = 69069 * xseed + 1327217885 
+!      yseed = m (m (m (yseed, 13), - 17), 5) 
+!      zseed = 18000 * IAND (zseed, 65535) + ISHFT (zseed, - 16) 
+!      wseed = 30903 * IAND (wseed, 65535) + ISHFT (wseed, - 16) 
+!      rand = ABS(xseed + yseed + ISHFT (zseed, 16) + wseed)/2147483648. !modified by MG
+      CALL random_number(rand)
 
-   CONTAINS
-
-      FUNCTION m(k, n)
-
-         INTEGER :: m, k, n
-
-         m = IEOR (k, ISHFT (k, n) )
-          
-      END FUNCTION m
+!   CONTAINS
+!
+!      FUNCTION m(k, n)
+!         IMPLICIT NONE
+!         INTEGER :: m, k, n
+!
+!         m = IEOR (k, ISHFT (k, n) )
+!
+!      END FUNCTION m
 
    END FUNCTION rand 
 
