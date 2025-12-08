@@ -9,7 +9,6 @@
   a) Thickness of each recording layer        : 1.0
 7)# of alpha intervals to bin (MAX=180)       : 90
 8)# of phi intervals to bin (MAX=180)         : 10
-           Use polar cap as grid?(yes=1, no=0): 1
            Interval type (ang = 1,cos = 0)    : 1
 9)X,Y,Z for absorption (yes=1,no=0)           : 0
 10)BOT.-output(yes=1,no=0)                    : 0

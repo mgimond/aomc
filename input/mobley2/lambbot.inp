@@ -1,0 +1,14 @@
+2
+001.0000	0.0000	0.0000	0.0000	0.0000
+002.0000	0.0000	0.0000	0.0000	0.0000
+==========================================================
+wavelength	fraction	fraction	fraction	fraction
+            of photons  of bottom   of photons  of photons
+            reflected   reflectance reflected   reflected
+            off of      specular    off of      specularly 
+            bottom                  target *    off of target *
+
+
+Wavelength 1: s/a = 0.25/1.0 --> scattering alebdo (omega) = 0.2
+Wavelength 2: s/a = 9.0/1.0  --> scattering alebdo (omega) = 0.9
+                                    
