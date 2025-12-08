@@ -129,6 +129,11 @@ PROGRAM mc
   REAL      :: sumfrac     !cumulitive summary of cumputed fracscat()
   REAL      :: ai          !Angle in rad
   REAL      :: sr          !Solid angle
+  REAL      :: R_aop, mu_up_aop, mu_down_aop, mu_aop, rd_aop, rup_aop, pld_aop, plu_aop
+  REAL      :: ed_sum_aop, eu_sum_aop, eou_sum_aop, eod_sum_aop, efwd_plus_eback_aop
+  REAL      :: R_val, Lu_val, Lua_val, ed_sum_0, norma_val
+  REAL, ALLOCATABLE, DIMENSION(:) :: rad_vals_row
+  REAL      :: dmu
 
 
   WRITE(*,'(7(A60,/))')                                             &
@@ -215,13 +220,9 @@ PROGRAM mc
 
      READ(1,'(48X,I8)')alphaint ;  WRITE(*,'(A30,I12)')'Alpha intervals =',alphaint
      CALL check_range_int(alphaint,1,180,erro)
-     CALL check_even(alphaint,erro)
 
      READ(1,'(48X,I8)')phiint ;  WRITE(*,'(A30,I12)')'Phi intervals =',phiint
      CALL check_range_int(phiint,1,360,erro)
-
-     READ(1,'(48X,I1)')polar ;  WRITE(*,'(A30,I12)')'Polar cap =',polar
-     CALL check_range_int(polar,0,1,erro)
 
      READ(1,'(48X,I1)')angint ;  WRITE(*,'(A30,I12)')'Angular or cosine intervals =',angint
      CALL check_range_int(angint,0,1,erro)
@@ -305,11 +306,6 @@ PROGRAM mc
 
   ! Use polar cap if the cosine of the polar angle is used as equal intervals
 
-  IF ( angint == 0) THEN
-
-     polar = 1
-
-  END IF
 
   ! ----------------------------------------------------------
   !                          - 3.0 -
@@ -1937,35 +1933,32 @@ PROGRAM mc
 
         END DO ALPHA_LOOP
 
-        IF (polar == 1 ) THEN
+        DO ii = -sidebound , sidebound
+           DO jj =  -sidebound , sidebound
+              DO kk = -1 , numlogly 
 
-           DO ii = -sidebound , sidebound
-              DO jj =  -sidebound , sidebound
-                 DO kk = -1 , numlogly 
+                 IF(angint == 1) THEN
+                    polar_ld(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,1,:)) ) / ( 2 * pi * (1 - COS( nalpha )) )
+                    polar_lu(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,alphaint,:)) ) / ( 2 * pi * (1 - COS( nalpha )) )
 
-                    IF(angint == 1) THEN
-                       polar_ld(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,1,:)) ) / ( 2 * pi * (1 - COS( nalpha )) )
-                       polar_lu(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,alphaint,:)) ) / ( 2 * pi * (1 - COS( nalpha )) )
+                    rad( lam,ii,jj,kk,1,: ) = REAL( n(lam,ii,jj,kk,1,:) ) / ( nphi * (1 - COS( nalpha )) )
+                    rad( lam,ii,jj,kk,alphaint,: ) = REAL( n(lam,ii,jj,kk,alphaint,:) ) / ( nphi * (1 - COS( nalpha )) )
+                 ELSE
+                    ! For angint=0 (equal cosine), dmu = 2.0 / alphaint.
+                    ! Solid angle of the entire polar cap = 2 * PI * dmu.
+                    polar_ld(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,1,:)) ) / (2.0 * PI * (2.0 / REAL(alphaint)))
+                    polar_lu(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,alphaint,:)) ) / (2.0 * PI * (2.0 / REAL(alphaint)))
 
-                       rad( lam,ii,jj,kk,1,: ) = REAL( n(lam,ii,jj,kk,1,:) ) / ( nphi * (1 - COS( nalpha )) )
-                       rad( lam,ii,jj,kk,alphaint,: ) = REAL( n(lam,ii,jj,kk,alphaint,:) ) / ( nphi * (1 - COS( nalpha )) )
-                    ELSE
-                       polar_ld(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,1,:)) ) / &
-                            ( 2 * PI / ( ( alphaint / 2 - 1 )*phiint + 1) )
-                       polar_lu(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,alphaint,:)) ) / &
-                            ( 2 * PI / ( ( alphaint / 2 - 1 )*phiint + 1) )
+                    ! Solid angle of a single bin in the polar cap = dmu * dphi = (2/alphaint) * (2*PI/phiint)
+                    rad( lam,ii,jj,kk,1,: ) = REAL( n(lam,ii,jj,kk,1,:) ) / &
+                         ((2.0 / REAL(alphaint)) * (2.0 * PI / REAL(phiint)))
+                    rad( lam,ii,jj,kk,alphaint,: ) = REAL( n(lam,ii,jj,kk,alphaint,:) ) / &
+                         ((2.0 / REAL(alphaint)) * (2.0 * PI / REAL(phiint)))
+                 END IF
 
-                       rad( lam,ii,jj,kk,1,: ) = REAL( n(lam,ii,jj,kk,1,:) ) / &
-                            ( (2 * PI / ( ( alphaint / 2 - 1 )*phiint + 1)) / phiint )
-                       rad( lam,ii,jj,kk,alphaint,: ) = REAL( n(lam,ii,jj,kk,alphaint,:) ) / &
-                            ( (2 * PI / ( ( alphaint / 2 - 1 )*phiint + 1)) / phiint )
-                    END IF
-
-                 END DO
               END DO
            END DO
-
-        END IF
+        END DO
 
         ! ------------------------------------------------------------
         !                          - 7.3 -
@@ -2035,7 +2028,7 @@ PROGRAM mc
 
                     IF (ll >= ( REAL(alphaint)/2. + 1.)) THEN
 
-                       IF ( (polar == 1) .AND. (ll == alphaint) ) THEN
+                       IF (ll == alphaint) THEN
 
                           eou(lam,ii,jj,kk) = SUM( n(lam,ii,jj,kk,ll,:) )       &
                                + eou(lam,ii,jj,kk)
@@ -2049,7 +2042,7 @@ PROGRAM mc
 
                     ELSE
 
-                       IF ( (polar == 1) .AND. (ll == 1) ) THEN
+                       IF (ll == 1) THEN
 
                           eod(lam,ii,jj,kk) = SUM( n(lam,ii,jj,kk,ll,:) )       &
                                + eod(lam,ii,jj,kk)
@@ -2089,25 +2082,71 @@ PROGRAM mc
                         ' Eod ' , ' meancosUP ',' meancosDown',              &
                         ' meancos ', 'rd ',' rup', 'Ld', 'Lu'
         
-                   DO kk = -1 , numlogly
-        
-                      WRITE(11,'(14(F12.7,2x))') layval(kk),                                   &
-                           SUM( eu(lam,:,:,kk) ), SUM( ed(lam,:,:,kk) ),          &
-                           (SUM( ed(lam,:,:,kk) ) - SUM( eu(lam,:,:,kk))),        & ! E
-                           SUM( eu(lam,:,:,kk) )/ SUM( ed(lam,:,:,kk) ),          & ! R
-                           SUM( eou(lam,:,:,kk) ),SUM( eod(lam,:,:,kk) ),         &
-                           SUM( eu(lam,:,:,kk))/ SUM(eou(lam,:,:,kk)  ),          & !meancos up
-                           SUM( ed(lam,:,:,kk))/ SUM( eod(lam,:,:,kk) ),          & !meancos down
-                           (SUM( ed(lam,:,:,kk) ) - SUM( eu(lam,:,:,kk))) /       &
-                           ( SUM( eou(lam,:,:,kk) ) + SUM( eod(lam,:,:,kk) )),    & ! meancos
-                           bdown(lam,kk)/fdown(lam,kk) / ( REAL(totalback(lam,kk)) /  & ! Down shapefactor
-                           REAL(totalfwd(lam,kk) + totalback(lam,kk))) ,          &
-                           bup(lam,kk)/fup(lam,kk) / ( REAL(totalback(lam,kk)) /      & ! Up shapefactor
-                           REAL(totalfwd(lam,kk) + totalback(lam,kk))),             &
-                           SUM(polar_ld(lam,:,:,kk)) / norma(lam),                  &
-                           SUM(polar_lu(lam,:,:,kk)) / norma(lam)
-        
-                   END DO
+           DO kk = -1 , numlogly
+              ! Safely calculate AOPs to avoid division by zero
+              eu_sum_aop = SUM( eu(lam,:,:,kk) )
+              ed_sum_aop = SUM( ed(lam,:,:,kk) )
+              eou_sum_aop = SUM( eou(lam,:,:,kk) )
+              eod_sum_aop = SUM( eod(lam,:,:,kk) )
+              efwd_plus_eback_aop = REAL(totalfwd(lam,kk) + totalback(lam,kk))
+
+              ! R
+              IF (ed_sum_aop > 0.0) THEN
+                 R_aop = eu_sum_aop / ed_sum_aop
+              ELSE
+                 R_aop = 0.0
+              END IF
+              
+              ! meancosUP
+              IF (eou_sum_aop > 0.0) THEN
+                 mu_up_aop = eu_sum_aop / eou_sum_aop
+              ELSE
+                 mu_up_aop = 0.0
+              END IF
+              
+              ! meancosDown
+              IF (eod_sum_aop > 0.0) THEN
+                 mu_down_aop = ed_sum_aop / eod_sum_aop
+              ELSE
+                 mu_down_aop = 0.0
+              END IF
+
+              ! meancos
+              IF ((eou_sum_aop + eod_sum_aop) > 0.0) THEN
+                 mu_aop = (ed_sum_aop - eu_sum_aop) / (eou_sum_aop + eod_sum_aop)
+              ELSE
+                 mu_aop = 0.0
+              END IF
+              
+              ! rd
+              IF (fdown(lam,kk) > 0.0 .AND. efwd_plus_eback_aop > 0.0) THEN
+                 rd_aop = (bdown(lam,kk)/fdown(lam,kk)) / &
+                          (REAL(totalback(lam,kk)) / efwd_plus_eback_aop)
+              ELSE
+                 rd_aop = 0.0
+              END IF
+
+              ! rup
+              IF (fup(lam,kk) > 0.0 .AND. efwd_plus_eback_aop > 0.0) THEN
+                 rup_aop = (bup(lam,kk)/fup(lam,kk)) / &
+                           (REAL(totalback(lam,kk)) / efwd_plus_eback_aop)
+              ELSE
+                 rup_aop = 0.0
+              END IF
+              
+              ! polar_ld/u
+              IF (norma(lam) > 0.0) THEN
+                 pld_aop = SUM(polar_ld(lam,:,:,kk)) / norma(lam)
+                 plu_aop = SUM(polar_lu(lam,:,:,kk)) / norma(lam)
+              ELSE
+                 pld_aop = 0.0
+                 plu_aop = 0.0
+              END IF
+
+              WRITE(11,'(14(F12.6,2x))') layval(kk), eu_sum_aop, ed_sum_aop, (ed_sum_aop - eu_sum_aop), &
+                R_aop, eou_sum_aop, eod_sum_aop, mu_up_aop, mu_down_aop, mu_aop, rd_aop, rup_aop, pld_aop, plu_aop
+
+           END DO
            WRITE(11,*)'* The above water reflectance is actually an albedo calculation'
 
         CASE DEFAULT
@@ -2122,95 +2161,183 @@ PROGRAM mc
         !                 Write radiance out to file
         ! ------------------------------------------------------------
 
-        SELECT CASE(ios)
+                SELECT CASE(ios)
 
-        CASE(0)
+        
 
-           WRITE(fmt,'(a,I4,a)') '(A12,2x,',INT(phiint/2.),'(F6.2,6x))'
-           WRITE(12,fmt) ' Angle(rad) ', ( (nphi * ii * 180 / PI), ii=0, INT(phiint/2.) - 1)
-           WRITE(fmt,'(a,I4,a)') '(F6.2,6x,',INT(phiint/2.),'(F11.7,1x))'
+                CASE(0)
 
-           DO kk = -1 , numlogly
+                
 
-              WRITE(12,'(F10.4,1x,a)') layval(kk),'m'
+                   ALLOCATE(rad_vals_row(phiint), STAT=astat)
 
-              DO ii = 1, ( (2 * alphaint) - 1)
+                   IF (astat /= 0) THEN
 
-                 IF (ii == 1) THEN
+                      erro = .TRUE.
 
-                    WRITE(12,fmt) 0.0, (SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam),  &
-                                         jj=1, INT(phiint/2.)) 
+                      WRITE(*,*) "Error allocating rad_vals_row"
 
-                 ELSE IF (ii < alphaint) THEN ! ]0 to 180[ degrees
+                      CYCLE LAMBDA_LOOP2
 
-                    IF (angint == 1) THEN
+                   END IF
 
-                       WRITE(12,fmt) (nalpha * ii * 180/PI), ( SUM(rad(lam,:,:,kk,ii,jj)) / &
-                            norma(lam), jj=1, INT(phiint/2.)) 
+        
 
-                    ELSE
+                   ! Create format string for header (phi angles)
 
-                       IF (ii >= ( REAL(alphaint)/2. + 1.)) THEN
+                   WRITE(fmt,'(a,I0,a)') '(A12,2x,',phiint,'(F6.2,6x))'
 
-                          WRITE(12,fmt) ( ( ACOS(-(ii - REAL(alphaint)/2. -1) * muu) +     &
-                               ACOS(-(ii - REAL(alphaint)/2.) * muu)) /2. )*180/PI,       &
-                               ( SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam), jj=1, INT(phiint/2.)) 
-                       ELSE
+                   ! Write header
 
-                          WRITE(12,fmt) ( (ACOS((1-mum) - (ii-2)*muu) + ACOS((1-mum) -     &
-                               (ii-1)*muu)) /2. )*180/PI,                                 &
-                               (SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam), jj=1, INT(phiint/2.)) 
-                       END IF
+                   WRITE(12,fmt) 'Angle(deg)', ( (nphi * REAL(ii-1) * 180.0 / PI), ii=1, phiint)
 
-                    END IF
+                   
 
-                 ELSE IF (ii == alphaint) THEN
+                   ! Create format string for data rows
 
-                    WRITE(12,fmt) 180.0,( SUM(rad(lam,:,:,kk,ii,jj)) /norma(lam), jj=1, INT(phiint/2.)) 
+                   WRITE(fmt,'(a,I0,a)') '(F12.6,2x,',phiint,'(F11.7,1x))'
 
-                 ELSE IF (ii < (2*alphaint - 1) ) THEN !180 to 360 degrees
+        
 
+                   DO kk = -1 , numlogly
 
-                    IF (angint == 1) THEN
+        
 
-                       WRITE(12,fmt) (nalpha * ii * 180/PI),                  &
-                            (SUM(rad(lam,:,:,kk,(2 * alphaint - ii+1),              &
-                            (jj + phiint/2)))/norma(lam), jj=1, INT(phiint/2.)) 
+                      WRITE(12,'(A,F10.4,A)') 'Depth: ', layval(kk),' m'
 
-                    ELSE
+        
 
-                       IF (ii <= ( 3*REAL(alphaint)/2. + 1.)) THEN
+                      DO ii = 1, alphaint
 
-                          WRITE(12,fmt) ( (2.*PI- ACOS(-(2*alphaint-ii - REAL(alphaint)/2. -1) * muu)) +     &
-                               (2.*PI- ACOS(-(2*alphaint-ii - REAL(alphaint)/2.) * muu)))/2.*180/PI,         &
-                               (SUM(rad(lam,:,:,kk,(2 * alphaint - ii),                                          &
-                               (jj + phiint/2)))/norma(lam), jj=1, INT(phiint/2.)) 
+                         
 
-                       ELSE
+                                          ! Calculate zenith angle for the current row
 
-                          WRITE(12,fmt) ( (2.*PI-ACOS((1-mum) - (2*alphaint-ii-2)*muu)) +      &
-                               (2.*PI-ACOS((1-mum) - (2*alphaint-ii-1)*muu))  )/2.*180/PI ,    &
-                               (SUM(rad(lam,:,:,kk,(2 * alphaint - ii),                            &
-                               (jj + phiint/2)))/norma(lam), jj=1, INT(phiint/2.)) 
+                         
 
-                       END IF
+                                          IF (angint == 1) THEN
 
-                    END IF
+                         
 
-                 ELSE  ! 360 degrees
+                                             ai = (nalpha * (REAL(ii - 1)) + nalpha/2.0) * 180.0/PI
 
-                    WRITE(12,fmt) 360.0 ,                                     &
-                         (SUM(rad(lam,:,:,kk,(2 * alphaint - ii),                 &
-                         (jj + phiint/2)))/norma(lam), jj=1, INT(phiint/2.)) 
+                         
 
+                                          ELSE
 
-                 END IF
+                         
 
-              END DO
+                                             IF (ii == 1) THEN
 
-           END DO
+                         
 
-        CASE DEFAULT
+                                                ai = (ACOS(1.0 - 0.5 * (2.0/REAL(alphaint)))) * 180.0/PI
+
+                         
+
+                                             ELSE IF (ii == alphaint) THEN
+
+                         
+
+                                                ai = (ACOS(-1.0 + 0.5 * (2.0/REAL(alphaint)))) * 180.0/PI
+
+                         
+
+                                             ELSE IF (ii >= (REAL(alphaint)/2.0 + 1.0)) THEN
+
+                         
+
+                                                ai = ( ACOS(-(ii - REAL(alphaint)/2.0 - 1.0) * muu) + &
+
+                         
+
+                                                       ACOS(-(ii - REAL(alphaint)/2.0) * muu) ) / 2.0 * 180.0/PI
+
+                         
+
+                                             ELSE
+
+                         
+
+                                                ai = ( ACOS(((1.0-mum) - (ii-2.0)*muu) + ((1.0-mum) - (ii-1.0)*muu)) /2.0 )*180/PI
+
+                         
+
+                                             END IF
+
+                         
+
+                                          END IF
+
+                         
+
+                                          
+
+                         
+
+                                          ! Safely calculate radiance values for the row
+
+                         
+
+                                          IF (norma(lam) > 0.0) THEN
+
+                         
+
+                                             DO jj = 1, phiint
+
+                         
+
+                                                rad_vals_row(jj) = SUM(rad(lam,:,:,kk,ii,jj)) / norma(lam)
+
+                         
+
+                                             END DO
+
+                         
+
+                                          ELSE
+
+                         
+
+                                             rad_vals_row(:) = 0.0
+
+                         
+
+                                          END IF
+
+                         
+
+                         
+
+                         
+
+                                          ! Write the full row
+
+                         
+
+                                          WRITE(12,fmt) ai, rad_vals_row
+
+        
+
+                      END DO
+
+        
+
+                   END DO
+
+        
+
+                   DEALLOCATE(rad_vals_row, STAT=astat)
+
+                   IF (astat /= 0) THEN
+
+                      WRITE(*,*) "Error deallocating rad_vals_row"
+
+                   END IF
+
+        
+
+                CASE DEFAULT
 
            WRITE(*,*) 'Failed to open ''aop.out'' '
            WRITE(*,*) '  IOSTAT error code = ', ios
@@ -2378,7 +2505,7 @@ PROGRAM mc
      !    Write data to file as a function of wavelength 
      ! ------------------------------------------------------------
 
-     IF (lambda > 1 .AND. polar == 1) THEN
+     IF (lambda > 1) THEN
 
         OPEN(14,iostat=ios,FILE='wave.out',status = 'unknown')
 
@@ -2390,14 +2517,30 @@ PROGRAM mc
                 ' Lu ',' Ed(a) ', ' Lu(a) '
 
            DO lam = 1, lambda
+              
+              ed_sum_0 = SUM(ed(lam,:,:,0))
+              norma_val = norma(lam)
 
-              WRITE(14,'(F12.6,2X,6(F13.7,1X))') wavelength(lam), &
-                   SUM( eu(lam,:,:,0)),SUM( ed(lam,:,:,0)),      &
-                   SUM(eu(lam,:,:,0))/SUM( ed(lam,:,:,0)),       &
-                   SUM(polar_lu(lam,:,:,0)) / norma(lam),  &
+              IF (ed_sum_0 > 0.0) THEN
+                 R_val = SUM(eu(lam,:,:,0)) / ed_sum_0
+              ELSE
+                 R_val = 0.0
+              END IF
+
+              IF (norma_val > 0.0) THEN
+                 Lu_val = SUM(polar_lu(lam,:,:,0)) / norma_val
+                 Lua_val = SUM(polar_lu(lam,:,:,-1)) / norma_val
+              ELSE
+                 Lu_val = 0.0
+                 Lua_val = 0.0
+              END IF
+              
+              WRITE(14,'(F12.6, 6(2X,F13.7))') wavelength(lam), &
+                   SUM( eu(lam,:,:,0)), ed_sum_0,      &
+                   R_val,       &
+                   Lu_val,  &
                    SUM( ed(lam,:,:,-1)),                         &
-                   SUM(polar_lu(lam,:,:,-1)) / norma(lam)
-
+                   Lua_val
            END DO
 
         CASE DEFAULT
