@@ -2195,7 +2195,7 @@ PROGRAM mc
 
                    ! Create format string for data rows
 
-                   WRITE(fmt,'(a,I0,a)') '(F12.6,2x,',phiint,'(F11.7,1x))'
+                   WRITE(fmt,'(a,I0,a)') '(F12.6,2x,',phiint,'(ES11.4,1x))'
 
         
 
