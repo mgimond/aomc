@@ -30,6 +30,16 @@ website:
             text: "difcol.qmd"
           - href: input_docs/skydist_inp.qmd
             text: "skydist.qmd"
+      - text: "Output Files"
+        menu:
+          - href: input_docs/aop_out.qmd
+            text: "aop.out"
+          - href: input_docs/iop_out.qmd
+            text: "iop.out"
+          - href: input_docs/rad_out.qmd
+            text: "rad.out"
+          - href: input_docs/wave_out.qmd
+            text: "wave.out"
       - href: input_docs/compilation.qmd
         text: Compilation
     right:

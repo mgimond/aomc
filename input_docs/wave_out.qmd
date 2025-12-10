@@ -1,0 +1,15 @@
+---
+title: "wave.out"
+---
+
+The `wave.out` file summarizes key optical properties at the surface for each simulated wavelength, making it particularly useful for remote sensing applications.
+
+The file contains the following columns:
+
+-   `wavelength`: The wavelength of light in nanometers.
+-   `Eu`: Upwelling planar irradiance just *below* the sea surface. It represents the total upward-traveling light energy per unit area at that depth.
+-   `Ed`: Downwelling planar irradiance just *below* the sea surface. It represents the total downward-traveling light energy per unit area at that depth.
+-   `R`: Remote sensing reflectance, calculated as the ratio of upwelling irradiance to downwelling irradiance (`Eu/Ed`) just below the surface.
+-   `Lu`: Upwelling radiance just *below* the sea surface. This is the upwelling energy confined to a specific solid angle, often what is measured by a satellite or airborne sensor.
+-   `Ed(a)`: Downwelling planar irradiance just *above* the sea surface.
+-   `Lu(a)`: Upwelling radiance just *above* the sea surface, also known as the water-leaving radiance.

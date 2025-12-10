@@ -1,0 +1,25 @@
+---
+title: "aop.out"
+---
+
+The `aop.out` file contains the Apparent Optical Properties (AOPs) computed by the Monte Carlo simulation. The file contains a table of AOPs at various depths. The output is structured in blocks, one for each wavelength defined in `lambbot.inp`. 
+
+The table has the following columns:
+
+*   `depth (m)`: The depth at which the AOPs are calculated. The first `depth = 0` represents the values at the water surface. The second `depth = 0` represents the values just below the air/water interface.
+*   `Eu`: Upward planar irradiance. This is the total upward-flowing light energy across a horizontal plane.
+*   `Ed`: Downward planar irradiance. This is the total downward-flowing light energy across a horizontal plane.
+*   `E`: Net planar irradiance, calculated as `Ed - Eu`.
+*   `R*`: Irradiance reflectance, calculated as `Eu / Ed`.
+*   `Eou`: Upward scalar irradiance. This is the total upward-flowing light energy from all directions at a point.
+*   `Eod`: Downward scalar irradiance. This is the total downward-flowing light energy from all directions at a point.
+*   `meancosUP`: Average cosine for upward irradiance, calculated as `Eu / Eou`. It represents the average direction of the upward light field.
+*   `meancosDown`: Average cosine for downward irradiance, calculated as `Ed / Eod`. It represents the average direction of the downward light field.
+*   `meancos`: Average cosine for the total light field, calculated as `(Ed - Eu) / (Eod + Eou)`.
+*   `rd`: Diffuse attenuation coefficient for downward irradiance.
+*   `rup`: Diffuse attenuation coefficient for upward irradiance.
+*   `Ld`: Downward radiance in the polar direction (0 degrees).
+*   `Lu`: Upward radiance in the nadir direction (180 degrees).
+
+Each block of output for a given wavelength is terminated by the line:
+`* The above water reflectance is actually an albedo calculation`

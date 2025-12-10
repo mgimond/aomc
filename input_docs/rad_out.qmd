@@ -1,0 +1,18 @@
+---
+title: "rad.out"
+---
+
+The `rad.out` file stores the radiance distribution for each simulated wavelength. The file is organized into blocks, with each block corresponding to a single wavelength.
+
+It's important to note that the wavelength values are not explicitly written in the `rad.out` file. To identify which wavelength corresponds to each data block, you must refer to the `lambbot.inp` file, which lists the wavelengths in the same order as they are processed and outputted.
+
+Each block in `rad.out` is structured as follows:
+
+1.  **Header Row**: Each block begins with a header row that lists the azimuthal (phi) angles in degrees at which the radiance is recorded. The first column is labeled `Angle(deg)`.
+
+2.  **Depth Sub-blocks**: Following the header, the file is divided into sub-blocks for each depth layer, identified by a line such as `Depth: 0.0000 m`. Note that there are two depth entries for 0 m. The first represents the radiance just above the air-water interface, while the second represents the radiance just below it.
+
+Within each depth sub-block:
+
+*   The first column represents the zenith angle (alpha) in degrees, and these values correspond to the center of each bin.
+*   The subsequent columns contain the radiance values corresponding to each azimuthal (phi) angle listed in the header.

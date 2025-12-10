@@ -1,0 +1,16 @@
+---
+title: "iop.out"
+---
+
+The `iop.out` file contains the Inherent Optical Properties (IOPs) for each layer of the water column. The file is structured in blocks, with each block corresponding to a specific layer.
+
+Each block starts with a header that specifies the layer number and its starting depth, for example:
+`Layer = 1 Starting at: 0.00000000 m`
+
+Following the header, a table lists the IOPs for each simulated wavelength within that layer. The table includes the following columns:
+
+*   `Wavelength`: The wavelength of light in nanometers.
+*   `absorption`: The bulk absorption coefficient (a) of the water for that layer and wavelength. This value represents the fraction of energy absorbed per unit distance.
+*   `scattering`: The bulk scattering coefficient (b) of the water for that layer and wavelength. This value represents the fraction of energy scattered out of the beam per unit distance.
+*   `attenuation`: The beam attenuation coefficient (c), which is the sum of the absorption and scattering coefficients (`c = a + b`).
+*   `scat albedo`: The single-scattering albedo (ω), calculated as the ratio of scattering to attenuation (`ω = b / c`). It represents the probability that a photon will be scattered rather than absorbed.
