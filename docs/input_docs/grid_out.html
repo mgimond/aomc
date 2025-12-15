@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>theory – AOMC Model Documentation</title>
+<title>Gridded Irradiance Output – AOMC Model Documentation</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -127,7 +127,7 @@ window.Quarto = {
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="../input_docs/theory.html" aria-current="page"> 
+    <a class="nav-link" href="../input_docs/theory.html"> 
 <span class="menu-text">Model Theory</span></a>
   </li>  
   <li class="nav-item dropdown ">
@@ -223,126 +223,129 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#aomc-radiative-transfer-theory-and-model-implementation" id="toc-aomc-radiative-transfer-theory-and-model-implementation" class="nav-link active" data-scroll-target="#aomc-radiative-transfer-theory-and-model-implementation">AOMC: Radiative Transfer Theory and Model Implementation</a>
+  <li><a href="#plain-ascii-matrix-format-surfer-0" id="toc-plain-ascii-matrix-format-surfer-0" class="nav-link active" data-scroll-target="#plain-ascii-matrix-format-surfer-0">1. Plain ASCII Matrix Format (<code>surfer = 0</code>)</a>
   <ul class="collapse">
-  <li><a href="#theory-of-radiative-transfer" id="toc-theory-of-radiative-transfer" class="nav-link" data-scroll-target="#theory-of-radiative-transfer">1. Theory of Radiative Transfer</a>
-  <ul class="collapse">
-  <li><a href="#inherent-optical-properties-iops" id="toc-inherent-optical-properties-iops" class="nav-link" data-scroll-target="#inherent-optical-properties-iops">Inherent Optical Properties (IOPs)</a></li>
+  <li><a href="#file-structure" id="toc-file-structure" class="nav-link" data-scroll-target="#file-structure">File Structure</a></li>
+  <li><a href="#data-block-structure" id="toc-data-block-structure" class="nav-link" data-scroll-target="#data-block-structure">Data Block Structure</a></li>
   </ul></li>
-  <li><a href="#the-aomc-model-implementation" id="toc-the-aomc-model-implementation" class="nav-link" data-scroll-target="#the-aomc-model-implementation">2. The AOMC Model Implementation</a>
+  <li><a href="#surfer-ascii-grid-format-surfer-1" id="toc-surfer-ascii-grid-format-surfer-1" class="nav-link" data-scroll-target="#surfer-ascii-grid-format-surfer-1">2. Surfer ASCII Grid Format (<code>surfer = 1</code>)</a>
   <ul class="collapse">
-  <li><a href="#photon-initialization" id="toc-photon-initialization" class="nav-link" data-scroll-target="#photon-initialization">Photon Initialization</a></li>
-  <li><a href="#the-air-water-interface" id="toc-the-air-water-interface" class="nav-link" data-scroll-target="#the-air-water-interface">The Air-Water Interface</a></li>
-  <li><a href="#path-length-determination" id="toc-path-length-determination" class="nav-link" data-scroll-target="#path-length-determination">Path Length Determination</a></li>
-  <li><a href="#absorption-or-scattering" id="toc-absorption-or-scattering" class="nav-link" data-scroll-target="#absorption-or-scattering">Absorption or Scattering</a></li>
-  <li><a href="#scattering-process" id="toc-scattering-process" class="nav-link" data-scroll-target="#scattering-process">Scattering Process</a></li>
-  <li><a href="#boundary-interactions-and-termination" id="toc-boundary-interactions-and-termination" class="nav-link" data-scroll-target="#boundary-interactions-and-termination">Boundary Interactions and Termination</a></li>
-  </ul></li>
+  <li><a href="#file-naming-convention" id="toc-file-naming-convention" class="nav-link" data-scroll-target="#file-naming-convention">File Naming Convention</a></li>
+  <li><a href="#file-structure-1" id="toc-file-structure-1" class="nav-link" data-scroll-target="#file-structure-1">File Structure</a></li>
   </ul></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Gridded Irradiance Output</h1>
+</div>
 
 
 
+<div class="quarto-title-meta">
 
-<section id="aomc-radiative-transfer-theory-and-model-implementation" class="level1">
-<h1>AOMC: Radiative Transfer Theory and Model Implementation</h1>
-<p>This document provides a summary of the theoretical basis for the AOMC model.</p>
-<section id="theory-of-radiative-transfer" class="level2">
-<h2 class="anchored" data-anchor-id="theory-of-radiative-transfer">1. Theory of Radiative Transfer</h2>
-<p>The propagation of light through an aquatic medium is governed by the Radiative Transfer Equation (RTE). The RTE accounts for the various ways light can be absorbed and scattered as it interacts with water and its dissolved and particulate constituents. The key to solving the RTE lies in characterizing the Inherent Optical Properties (IOPs) of the medium. IOPs are properties that depend only on the substances in the medium, not on the ambient light field.</p>
-<section id="inherent-optical-properties-iops" class="level3">
-<h3 class="anchored" data-anchor-id="inherent-optical-properties-iops">Inherent Optical Properties (IOPs)</h3>
-<p>The primary IOPs that determine the fate of light are:</p>
-<section id="absorption-and-scattering" class="level4">
-<h4 class="anchored" data-anchor-id="absorption-and-scattering">Absorption and Scattering</h4>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>When parameter <code>14) Number of cells in X-Y direction</code> in <code>amc.inp</code> is set to a value greater than 0, the AOMC model generates spatially-resolved gridded irradiance data. This output is useful for visualizing the 2D distribution of light when light source is other than collimated.</p>
+<p>The format of this gridded output is controlled by parameter <code>14b) Output to Surfer format</code>.</p>
+<section id="plain-ascii-matrix-format-surfer-0" class="level2">
+<h2 class="anchored" data-anchor-id="plain-ascii-matrix-format-surfer-0">1. Plain ASCII Matrix Format (<code>surfer = 0</code>)</h2>
+<p>When the Surfer format option is turned <strong>off</strong> (<code>0</code>), the model produces four files, each containing data for all simulated wavelengths and depths in a plain ASCII format.</p>
 <ul>
-<li><strong>Absorption Coefficient (<span class="math inline">\(a\)</span>):</strong> The fraction of radiant energy absorbed by the medium per unit path length (units: m⁻¹).</li>
-<li><strong>Scattering Coefficient (<span class="math inline">\(b\)</span>):</strong> The fraction of radiant energy scattered by the medium per unit path length (units: m⁻¹).</li>
+<li><code>grided.out</code>: Gridded Downward Planar Irradiance (<span class="math inline">\(E_d\)</span>)</li>
+<li><code>grideu.out</code>: Gridded Upward Planar Irradiance (<span class="math inline">\(E_u\)</span>)</li>
+<li><code>gridedo.out</code>: Gridded Downward Scalar Irradiance (<span class="math inline">\(E_{od}\)</span>)</li>
+<li><code>grideuo.out</code>: Gridded Upward Scalar Irradiance (<span class="math inline">\(E_{ou}\)</span>)</li>
 </ul>
-<p>These two properties combine to form the <strong>beam attenuation coefficient (<span class="math inline">\(c\)</span>)</strong>, which represents the total loss of energy from a light beam due to both absorption and scattering: <span class="math display">\[
-c(\lambda) = a(\lambda) + b(\lambda)
-\]</span></p>
-<p>The <strong>single-scattering albedo (<span class="math inline">\(\omega_0\)</span>)</strong> describes the probability that a photon will be scattered rather than absorbed upon interaction: <span class="math display">\[
-\omega_0(\lambda) = \frac{b(\lambda)}{c(\lambda)}
-\]</span></p>
+<section id="file-structure" class="level3">
+<h3 class="anchored" data-anchor-id="file-structure">File Structure</h3>
+<p>All four <code>grid*.out</code> files share the same structure. They consist of a series of data blocks, where each block represents the spatial distribution of irradiance for a single wavelength at a single depth. The blocks for each wavelength are written sequentially.</p>
+<p>The depths at which the grids are generated are determined by the settings for parameter <code>6) Number of depth recording layers</code> in the <code>amc.inp</code> file. Grids are produced for each of these layers, in addition to a grid just above the water surface (layer index -1) and just below it (layer index 0).</p>
 </section>
-<section id="additivity-of-iops" class="level4">
-<h4 class="anchored" data-anchor-id="additivity-of-iops">Additivity of IOPs</h4>
-<p>For a medium containing multiple constituents (e.g., pure water, phytoplankton, sediments), the bulk IOPs are the sum of the contributions from each constituent. The contribution of each constituent is its concentration (<span class="math inline">\(C_i\)</span>) multiplied by its specific absorption or scattering coefficient (<span class="math inline">\(a_i^*\)</span> or <span class="math inline">\(b_i^*\)</span>).</p>
-<p>The bulk absorption coefficient is given by: <span class="math display">\[ a(\lambda) = a_w(\lambda) + \sum_{i=1}^{N} a_i^*(\lambda)C_i \]</span> The bulk scattering coefficient is given by: <span class="math display">\[ b(\lambda) = b_w(\lambda) + \sum_{i=1}^{N} b_i^*(\lambda)C_i \]</span> where the subscript <span class="math inline">\(w\)</span> refers to pure water and <span class="math inline">\(i\)</span> refers to the i-th constituent.</p>
-</section>
-<section id="the-volume-scattering-function-vsf" class="level4">
-<h4 class="anchored" data-anchor-id="the-volume-scattering-function-vsf">The Volume Scattering Function (VSF)</h4>
-<p>While the scattering coefficient <span class="math inline">\(b\)</span> describes the total amount of scattering, the <strong>Volume Scattering Function (VSF)</strong>, <span class="math inline">\(\beta(\psi, \lambda)\)</span>, describes the angular distribution of the scattered light. It is defined as the radiant intensity scattered from a small volume element in a given direction <span class="math inline">\(\psi\)</span> per unit of incident irradiance (units: m⁻¹ sr⁻¹).</p>
-<p>The scattering coefficient <span class="math inline">\(b\)</span> is the integral of the VSF over all solid angles: <span class="math display">\[ b(\lambda) = 2\pi \int_{0}^{\pi} \beta(\psi, \lambda) \sin(\psi) d\psi \]</span> A normalized version of the VSF, known as the <strong>scattering phase function (<span class="math inline">\(\tilde{\beta}\)</span>)</strong>, gives the probability distribution of a scattering event at a given angle: <span class="math display">\[ \tilde{\beta}(\psi, \lambda) = \frac{\beta(\psi, \lambda)}{b(\lambda)} \]</span></p>
-</section>
-</section>
-</section>
-<section id="the-aomc-model-implementation" class="level2">
-<h2 class="anchored" data-anchor-id="the-aomc-model-implementation">2. The AOMC Model Implementation</h2>
-<p>The AOMC model uses the <strong>Monte Carlo method</strong> to solve the RTE. This statistical approach simulates the individual life histories of a large number of photons. By tracking the fate of each photon, the model reconstructs the macroscopic light field (e.g., radiance and irradiance) throughout the water body.</p>
-<p>The life cycle of a single photon is simulated as follows:</p>
-<section id="photon-initialization" class="level3">
-<h3 class="anchored" data-anchor-id="photon-initialization">Photon Initialization</h3>
-<ul>
-<li>A photon is generated above the air-water interface. Its initial direction is determined by the sky radiance distribution, which can be either a simple model with direct and diffuse components (<code>difcol.inp</code>) or a tabulated distribution from a file (<code>skydist.inp</code>).</li>
-</ul>
-</section>
-<section id="the-air-water-interface" class="level3">
-<h3 class="anchored" data-anchor-id="the-air-water-interface">The Air-Water Interface</h3>
-<ul>
-<li>When the photon strikes the surface, <strong>Fresnel’s equations</strong> are used with a random number to determine if it is reflected or transmitted into the water.</li>
-<li>If the photon is transmitted, <strong>Snell’s Law</strong> is used to calculate its new, refracted angle of travel within the water.</li>
-</ul>
-</section>
-<section id="path-length-determination" class="level3">
-<h3 class="anchored" data-anchor-id="path-length-determination">Path Length Determination</h3>
-<ul>
-<li>The distance the photon travels between interactions is its optical path length. This step size, <span class="math inline">\(\Delta l\)</span>, is determined probabilistically using the beam attenuation coefficient <span class="math inline">\(c(\lambda)\)</span> and a random number, <span class="math inline">\(\xi_1\)</span>, uniformly distributed between 0 and 1: <span class="math display">\[ \Delta l = -\frac{\ln(\xi_1)}{c(\lambda)} \]</span></li>
-</ul>
-</section>
-<section id="absorption-or-scattering" class="level3">
-<h3 class="anchored" data-anchor-id="absorption-or-scattering">Absorption or Scattering</h3>
-<ul>
-<li>After traveling the distance <span class="math inline">\(\Delta l\)</span>, the photon interacts with the medium. A decision is made to either absorb or scatter the photon.</li>
-<li>A new random number, <span class="math inline">\(\xi_2\)</span>, is generated and compared to the single-scattering albedo, <span class="math inline">\(\omega_0(\lambda)\)</span>.
-<ul>
-<li>If <span class="math inline">\(\xi_2 \le \omega_0(\lambda)\)</span>, the photon is <strong>scattered</strong>.</li>
-<li>If <span class="math inline">\(\xi_2 &gt; \omega_0(\lambda)\)</span>, the photon is <strong>absorbed</strong>, and its simulation is terminated.</li>
-</ul></li>
-</ul>
-</section>
-<section id="scattering-process" class="level3">
-<h3 class="anchored" data-anchor-id="scattering-process">Scattering Process</h3>
-<ul>
-<li>If the photon is scattered, its direction must change.
+<section id="data-block-structure" class="level3">
+<h3 class="anchored" data-anchor-id="data-block-structure">Data Block Structure</h3>
+<p>Each data block is composed of a header section followed by a data matrix.</p>
+<section id="header-section" class="level4">
+<h4 class="anchored" data-anchor-id="header-section">Header Section</h4>
+<p>The header provides metadata for the subsequent grid. It consists of four lines:</p>
 <ol type="1">
-<li><strong>Select Constituent:</strong> The model first determines which constituent particle scattered the photon. This is a random choice weighted by the relative scattering contribution of each constituent at that wavelength.</li>
-<li><strong>Select New Angle:</strong> The model then uses the cumulative scattering phase function for that specific particle (from <code>spf.inp</code>) as a probability table. A new random number, <span class="math inline">\(\xi_3\)</span>, is generated to select a new polar scattering angle, <span class="math inline">\(\theta\)</span>. A uniformly distributed random number determines the azimuthal scattering angle, <span class="math inline">\(\phi\)</span>.</li>
-</ol></li>
-</ul>
-</section>
-<section id="boundary-interactions-and-termination" class="level3">
-<h3 class="anchored" data-anchor-id="boundary-interactions-and-termination">Boundary Interactions and Termination</h3>
-<p>The photon’s life ends when one of the following occurs:</p>
-<ol type="1">
-<li>It is <strong>absorbed</strong> within the water column.</li>
-<li>It scatters upward and passes back out through the <strong>air-water interface</strong>.</li>
-<li>It hits a <strong>side boundary</strong> of the model domain.</li>
-<li>It strikes the <strong>bottom boundary</strong>. At the bottom, a random number is compared to the bottom reflectance (<span class="math inline">\(R_b\)</span>) from <code>lambbot.inp</code>.
+<li><p><strong>Grid and Run Info</strong>: Contains the grid dimensions, wavelength, and depth. <code>GRID [N] LAMBDA [wavelength] nm DEPTH [depth] m</code></p>
 <ul>
-<li>If absorbed, the photon is terminated.</li>
-<li>If reflected, another random number determines if the reflection is specular (mirror-like) or diffuse (Lambertian), and the photon’s journey continues in an upward direction.</li>
+<li><code>[N]</code>: The number of cells in the X and Y dimensions.</li>
+<li><code>[wavelength]</code>: The wavelength for this grid, in nanometers.</li>
+<li><code>[depth]</code>: The depth of the grid, in meters.</li>
 </ul></li>
+<li><p><strong>X-Axis Extents</strong>: The minimum and maximum X coordinates of the grid. <code>XMIN XMAX [min_x] [max_x]</code></p></li>
+<li><p><strong>Y-Axis Extents</strong>: The minimum and maximum Y coordinates of the grid. <code>YMIN YMAX [min_y] [max_y]</code></p></li>
+<li><p><strong>Z-Value Extents</strong>: The minimum and maximum irradiance values found within this specific grid. <code>ZMIN ZMAX [min_irradiance] [max_irradiance]</code></p></li>
+</ol>
+</section>
+<section id="data-matrix" class="level4">
+<h4 class="anchored" data-anchor-id="data-matrix">Data Matrix</h4>
+<p>Immediately following the four-line header is the data matrix. This is an <code>N x N</code> grid of floating-point numbers. Each row in the file corresponds to a row in the spatial grid.</p>
+<section id="example" class="level5">
+<h5 class="anchored" data-anchor-id="example">Example</h5>
+<p>Below is a conceptual example of a single data block for a <code>5x5</code> grid in a <code>grided.out</code> file when <code>surfer = 0</code>.</p>
+<pre><code>GRID           5 LAMBDA   550.000 nm DEPTH     1.000000 m
+XMIN XMAX     -2.500000      2.500000
+YMIN YMAX     -2.500000      2.500000
+ZMIN ZMAX    1.10000000E-03    8.50000000E-02
+ 1.10000000E-03  1.50000000E-03  1.80000000E-03  1.50000000E-03  1.10000000E-03
+ 1.50000000E-03  5.50000000E-02  8.50000000E-02  5.50000000E-02  1.50000000E-03
+ 1.80000000E-03  8.50000000E-02  1.20000000E-01  8.50000000E-02  1.80000000E-03
+ 1.50000000E-03  5.50000000E-02  8.50000000E-02  5.50000000E-02  1.50000000E-03
+ 1.10000000E-03  1.50000000E-03  1.80000000E-03  1.50000000E-03  1.10000000E-03
+
+--- Next data block for a different depth or wavelength would follow ---</code></pre>
+</section>
+</section>
+</section>
+</section>
+<section id="surfer-ascii-grid-format-surfer-1" class="level2">
+<h2 class="anchored" data-anchor-id="surfer-ascii-grid-format-surfer-1">2. Surfer ASCII Grid Format (<code>surfer = 1</code>)</h2>
+<p>When the Surfer format option is turned <strong>on</strong> (<code>1</code>), the model produces gridded output for Downward Planar Irradiance (<span class="math inline">\(E_d\)</span>) and Upward Planar Irradiance (<span class="math inline">\(E_u\)</span>) only.</p>
+<p>Instead of appending all data to a single file, the model creates a <strong>separate file for each combination of depth and wavelength</strong>.</p>
+<section id="file-naming-convention" class="level3">
+<h3 class="anchored" data-anchor-id="file-naming-convention">File Naming Convention</h3>
+<p>The files are named using the pattern <code>[Type]_[Depth]_[Wavelength].grd</code>.</p>
+<ul>
+<li><code>[Type]</code>: <code>Eu</code> or <code>Ed</code>.</li>
+<li><code>[Depth]</code>: A code representing the depth layer:
+<ul>
+<li><code>0000a_</code>: Above the water surface (layer -1).</li>
+<li><code>0000w_</code>: In the water at the surface (layer 0).</li>
+<li><code>[#####]</code>: A zero-padded integer for subsequent depth layers (e.g., <code>00001_</code>).</li>
+</ul></li>
+<li><code>[Wavelength]</code>: A zero-padded integer representing the wavelength multiplied by 1000.</li>
+</ul>
+<p><strong>Example Filenames:</strong> * <code>Eu_0000a__450000.grd</code>: Upward planar irradiance, above the surface, for wavelength 450.0 nm. * <code>Ed_00001__675000.grd</code>: Downward planar irradiance, at the first depth layer, for wavelength 675.0 nm.</p>
+</section>
+<section id="file-structure-1" class="level3">
+<h3 class="anchored" data-anchor-id="file-structure-1">File Structure</h3>
+<p>Each <code>.grd</code> file follows the standard Surfer ASCII Grid format, which is compatible with Surfer software from Golden Software and other GIS/visualization tools. The structure is:</p>
+<ol type="1">
+<li><strong>Line 1</strong>: A 4-character ID <code>DSAA</code>.</li>
+<li><strong>Line 2</strong>: The number of grid lines along the X and Y axes (<code>Nx Ny</code>).</li>
+<li><strong>Line 3</strong>: The minimum and maximum X values of the grid (<code>Xmin Xmax</code>).</li>
+<li><strong>Line 4</strong>: The minimum and maximum Y values of the grid (<code>Ymin Ymax</code>).</li>
+<li><strong>Line 5</strong>: The minimum and maximum Z (irradiance) values in the grid (<code>Zmin Zmax</code>).</li>
+<li><strong>Subsequent Lines</strong>: The grid data, written one row at a time, with values for each column in that row separated by spaces.</li>
 </ol>
 
 
 
-</section>
 </section>
 </section>
 

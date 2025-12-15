@@ -1,0 +1,99 @@
+---
+title: "Gridded Irradiance Output"
+---
+
+When parameter `14) Number of cells in X-Y direction` in `amc.inp` is set to a value greater than 0, the AOMC model generates spatially-resolved gridded irradiance data. This output is useful for visualizing the 2D distribution of light when light source is other than collimated.
+
+The format of this gridded output is controlled by parameter `14b) Output to Surfer format`.
+
+## 1. Plain ASCII Matrix Format (`surfer = 0`)
+
+When the Surfer format option is turned **off** (`0`), the model produces four files, each containing data for all simulated wavelengths and depths in a plain ASCII format.
+
+*   `grided.out`: Gridded Downward Planar Irradiance ($E_d$)
+*   `grideu.out`: Gridded Upward Planar Irradiance ($E_u$)
+*   `gridedo.out`: Gridded Downward Scalar Irradiance ($E_{od}$)
+*   `grideuo.out`: Gridded Upward Scalar Irradiance ($E_{ou}$)
+
+### File Structure
+
+All four `grid*.out` files share the same structure. They consist of a series of data blocks, where each block represents the spatial distribution of irradiance for a single wavelength at a single depth. The blocks for each wavelength are written sequentially.
+
+The depths at which the grids are generated are determined by the settings for parameter `6) Number of depth recording layers` in the `amc.inp` file. Grids are produced for each of these layers, in addition to a grid just above the water surface (layer index -1) and just below it (layer index 0).
+
+### Data Block Structure
+
+Each data block is composed of a header section followed by a data matrix.
+
+#### Header Section
+
+The header provides metadata for the subsequent grid. It consists of four lines:
+
+1.  **Grid and Run Info**: Contains the grid dimensions, wavelength, and depth.
+    `GRID [N] LAMBDA [wavelength] nm DEPTH [depth] m`
+    *   `[N]`: The number of cells in the X and Y dimensions.
+    *   `[wavelength]`: The wavelength for this grid, in nanometers.
+    *   `[depth]`: The depth of the grid, in meters.
+
+2.  **X-Axis Extents**: The minimum and maximum X coordinates of the grid.
+    `XMIN XMAX [min_x] [max_x]`
+
+3.  **Y-Axis Extents**: The minimum and maximum Y coordinates of the grid.
+    `YMIN YMAX [min_y] [max_y]`
+
+4.  **Z-Value Extents**: The minimum and maximum irradiance values found within this specific grid.
+    `ZMIN ZMAX [min_irradiance] [max_irradiance]`
+
+#### Data Matrix
+
+Immediately following the four-line header is the data matrix. This is an `N x N` grid of floating-point numbers. Each row in the file corresponds to a row in the spatial grid.
+
+##### Example
+
+Below is a conceptual example of a single data block for a `5x5` grid in a `grided.out` file when `surfer = 0`.
+
+```
+GRID           5 LAMBDA   550.000 nm DEPTH     1.000000 m
+XMIN XMAX     -2.500000      2.500000
+YMIN YMAX     -2.500000      2.500000
+ZMIN ZMAX    1.10000000E-03    8.50000000E-02
+ 1.10000000E-03  1.50000000E-03  1.80000000E-03  1.50000000E-03  1.10000000E-03
+ 1.50000000E-03  5.50000000E-02  8.50000000E-02  5.50000000E-02  1.50000000E-03
+ 1.80000000E-03  8.50000000E-02  1.20000000E-01  8.50000000E-02  1.80000000E-03
+ 1.50000000E-03  5.50000000E-02  8.50000000E-02  5.50000000E-02  1.50000000E-03
+ 1.10000000E-03  1.50000000E-03  1.80000000E-03  1.50000000E-03  1.10000000E-03
+
+--- Next data block for a different depth or wavelength would follow ---
+```
+
+## 2. Surfer ASCII Grid Format (`surfer = 1`)
+
+When the Surfer format option is turned **on** (`1`), the model produces gridded output for Downward Planar Irradiance ($E_d$) and Upward Planar Irradiance ($E_u$) only.
+
+Instead of appending all data to a single file, the model creates a **separate file for each combination of depth and wavelength**.
+
+### File Naming Convention
+
+The files are named using the pattern `[Type]_[Depth]_[Wavelength].grd`.
+
+*   `[Type]`: `Eu` or `Ed`.
+*   `[Depth]`: A code representing the depth layer:
+    *   `0000a_`: Above the water surface (layer -1).
+    *   `0000w_`: In the water at the surface (layer 0).
+    *   `[#####]`: A zero-padded integer for subsequent depth layers (e.g., `00001_`).
+*   `[Wavelength]`: A zero-padded integer representing the wavelength multiplied by 1000.
+
+**Example Filenames:**
+*   `Eu_0000a__450000.grd`: Upward planar irradiance, above the surface, for wavelength 450.0 nm.
+*   `Ed_00001__675000.grd`: Downward planar irradiance, at the first depth layer, for wavelength 675.0 nm.
+
+### File Structure
+
+Each `.grd` file follows the standard Surfer ASCII Grid format, which is compatible with Surfer software from Golden Software and other GIS/visualization tools. The structure is:
+
+1.  **Line 1**: A 4-character ID `DSAA`.
+2.  **Line 2**: The number of grid lines along the X and Y axes (`Nx Ny`).
+3.  **Line 3**: The minimum and maximum X values of the grid (`Xmin Xmax`).
+4.  **Line 4**: The minimum and maximum Y values of the grid (`Ymin Ymax`).
+5.  **Line 5**: The minimum and maximum Z (irradiance) values in the grid (`Zmin Zmax`).
+6.  **Subsequent Lines**: The grid data, written one row at a time, with values for each column in that row separated by spaces.

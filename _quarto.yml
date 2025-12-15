@@ -40,6 +40,8 @@ website:
             text: "rad.out"
           - href: input_docs/wave_out.qmd
             text: "wave.out"
+          - href: input_docs/grid_out.qmd
+            text: "grid*.out"
       - href: input_docs/compilation.qmd
         text: Compilation
     right:
