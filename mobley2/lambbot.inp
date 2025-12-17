@@ -1,5 +1,4 @@
-2
-001.0000	0.0000	0.0000	0.0000	0.0000
+1
 002.0000	0.0000	0.0000	0.0000	0.0000
 ==========================================================
 wavelength	fraction	fraction	fraction	fraction
@@ -9,6 +8,5 @@ wavelength	fraction	fraction	fraction	fraction
             bottom                  target *    off of target *
 
 
-Wavelength 1: s/a = 0.25/1.0 --> scattering alebdo (omega) = 0.2
 Wavelength 2: s/a = 9.0/1.0  --> scattering alebdo (omega) = 0.9
                                     

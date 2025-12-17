@@ -1911,6 +1911,9 @@ PROGRAM mc
         ai=0.
         sr=0.
 
+        ! ALL PHOTONS THAT WERE BINNED AT BIN# 1 AND ALPHAINT WILL BE GROUPED
+        ! INTO A SINGLE BIN. THIS WILL BE THE POLAR BINS (NORTH AND SOUTH)
+
         ALPHA_LOOP: DO  jj = 1, ( alphaint )
 
            IF  (angint == 1 ) THEN
@@ -1919,8 +1922,8 @@ PROGRAM mc
               sr = SIN( ai ) * nalpha * nphi * ABS( COS( ai ) )
               rad( :,:,:,:,jj,: ) = REAL( n(:,:,:,:,jj,:) ) / sr
 
- !          ELSE IF ( jj /= 1 .AND. jj /= alphaint) THEN  
-           ELSE
+           ELSE IF ( jj /= 1 .AND. jj /= alphaint) THEN  
+
               ai =  ( ACOS(-(jj - REAL(alphaint)/2. -1) * muu) +   &
                    ACOS(-(jj - REAL(alphaint)/2.) * muu)) /2.
               sr = 2 * PI / ( ( alphaint / 2 - 1 )*phiint + 1)
@@ -1938,7 +1941,7 @@ PROGRAM mc
                     polar_ld(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,1,:)) ) / ( 2 * pi * (1 - COS( nalpha )) )
                     polar_lu(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,alphaint,:)) ) / ( 2 * pi * (1 - COS( nalpha )) )
 
-                    rad( lam,ii,jj,kk,1,:  ) = REAL( n(lam,ii,jj,kk,1,:) ) / ( nphi * (1 - COS( nalpha )) )
+                    rad( lam,ii,jj,kk,1,: ) = REAL( n(lam,ii,jj,kk,1,:) ) / ( nphi * (1 - COS( nalpha )) )
                     rad( lam,ii,jj,kk,alphaint,: ) = REAL( n(lam,ii,jj,kk,alphaint,:) ) / ( nphi * (1 - COS( nalpha )) )
                  ELSE
                     ! For angint=0 (equal cosine), dmu = 2.0 / alphaint.
@@ -1948,9 +1951,9 @@ PROGRAM mc
 
                     ! Solid angle of a single bin in the polar cap = dmu * dphi = (2/alphaint) * (2*PI/phiint)
                     rad( lam,ii,jj,kk,1,: ) = REAL( n(lam,ii,jj,kk,1,:) ) / &
-                                            ((2.0 / REAL(alphaint)) * (2.0 * PI / REAL(phiint)))
+                         ((2.0 / REAL(alphaint)) * (2.0 * PI / REAL(phiint)))
                     rad( lam,ii,jj,kk,alphaint,: ) = REAL( n(lam,ii,jj,kk,alphaint,:) ) / &
-                                                     ((2.0 / REAL(alphaint)) * (2.0 * PI / REAL(phiint)))
+                         ((2.0 / REAL(alphaint)) * (2.0 * PI / REAL(phiint)))
                  END IF
 
               END DO
@@ -2213,35 +2216,108 @@ PROGRAM mc
                          
 
                                           IF (angint == 1) THEN
-                                          
-										     ai = (nalpha * (REAL(ii - 1)) + nalpha/2.0) * 180.0/PI
-                      
+
+                         
+
+                                             ai = (nalpha * (REAL(ii - 1)) + nalpha/2.0) * 180.0/PI
+
+                         
+
                                           ELSE
-                                             dmu = 2.0/REAL(alphaint)
-                                             ai = ACOS(1.0 - (REAL(ii - 1) + 0.5) * dmu) * 180.0/PI
+
+                         
+
+                                             IF (ii == 1) THEN
+
+                         
+
+                                                ai = (ACOS(1.0 - 0.5 * (2.0/REAL(alphaint)))) * 180.0/PI
+
+                         
+
+                                             ELSE IF (ii == alphaint) THEN
+
+                         
+
+                                                ai = (ACOS(-1.0 + 0.5 * (2.0/REAL(alphaint)))) * 180.0/PI
+
+                         
+
+                                             ELSE IF (ii >= (REAL(alphaint)/2.0 + 1.0)) THEN
+
+                         
+
+                                                ai = ( ACOS(-(ii - REAL(alphaint)/2.0 - 1.0) * muu) + &
+
+                         
+
+                                                       ACOS(-(ii - REAL(alphaint)/2.0) * muu) ) / 2.0 * 180.0/PI
+
+                         
+
+                                             ELSE
+
+                         
+
+                                                ai = ( ACOS(((1.0-mum) - (ii-2.0)*muu) + ((1.0-mum) - (ii-1.0)*muu)) /2.0 )*180/PI
+
+                         
+
+                                             END IF
+
+                         
 
                                           END IF
 
+                         
+
+                                          
+
+                         
+
                                           ! Safely calculate radiance values for the row
-                     
+
+                         
 
                                           IF (norma(lam) > 0.0) THEN
 
+                         
+
                                              DO jj = 1, phiint
+
+                         
+
                                                 rad_vals_row(jj) = SUM(rad(lam,:,:,kk,ii,jj)) / norma(lam)
 
+                         
+
                                              END DO
- 
+
+                         
+
                                           ELSE
- 
+
+                         
+
                                              rad_vals_row(:) = 0.0
- 
+
+                         
+
                                           END IF
- 
+
+                         
+
+                         
+
+                         
+
                                           ! Write the full row
- 
+
+                         
+
                                           WRITE(12,fmt) ai, rad_vals_row
- 
+
+        
 
                       END DO
 
