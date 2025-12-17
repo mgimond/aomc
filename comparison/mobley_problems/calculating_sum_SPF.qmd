@@ -1,0 +1,152 @@
+--- 
+title: "Calculating the Normalized Cumulative Scattering Phase Function"
+format: gfm
+---
+
+## Introduction
+
+This document explains the method for computing the normalized cumulative scattering phase function from a set of angles (\(\theta\)) and their corresponding volume scattering function values (\(\sigma(\theta)\)). The methodology follows the process described by T.J. Petzold in "Volume Scattering Functions for Selected Ocean Waters" (1972).
+
+The primary goal is to numerically solve for the cumulative integral:
+
+$$ I(\theta) = 2\pi \int_{0}^{\theta} \sigma(\theta') \sin(\theta') d\theta' $$
+
+And the normalized integral (or cumulative probability function):
+
+$$ P(\theta) = \frac{I(\theta)}{s} $$
+
+where $s$ is the total scattering coefficient, calculated as the integral over the full range of angles ($0$ to $180^°$).
+
+## Calculation Methodology
+
+The calculation is performed numerically and cumulatively. A special method is required for the first angular interval (from 0 to the first measured angle, \(\theta_1\)) because the function changes rapidly near zero. For all subsequent intervals, the standard trapezoidal rule is used.
+
+### 1. The First Interval (0 to \(\theta_1\)): Power-Law Extrapolation
+
+We cannot simply use a trapezoid for the first interval because we don't have a measurement at \(\theta=0\). Petzold's method assumes that for very small angles, the scattering function follows a power law:
+
+$$ \sigma(\theta) = C \cdot \theta^m $$
+
+To calculate the integral for this first interval, we follow a three-step process using your first two data points, (\(\theta_1, \sigma_1\)) and (\(\theta_2, \sigma_2\)). **Angles must be in radians for all calculations.**
+
+#### Step 1.1: Calculate the slope `m`
+
+The exponent `m` is the slope of the log-log plot of the first two points.
+
+**Formula:**
+$m = \frac{\ln(\sigma_2) - \ln(\sigma_1)}{\ln(\theta_2) - \ln(\theta_1)}$
+
+#### Step 1.2: Calculate the constant `C`
+
+The constant `C` can be found using the first data point and the slope `m`.
+
+**Formula:**
+$C = \frac{\sigma_1}{\theta_1^m}$
+
+#### Step 1.3: Calculate the Integral for the First Interval
+
+With `C` and `m`, we can analytically solve the integral from 0 to \(\theta_1\), using the small angle approximation \(\sin(\theta) \approx \theta\).
+
+**Formula:**
+$$ \text{Integral}_1 = 2\pi \cdot C \cdot \frac{\theta_1^{(m+2)}}{m+2} $$
+This value is the starting point of your cumulative sum.
+
+### 2. Subsequent Intervals: The Trapezoidal Rule
+
+For every interval after the first one, the process is much simpler. The integral is updated by adding the area of the next small trapezoid.
+
+**Formula:**
+The area of the trapezoid between point $i-1$ and point $i$ is:
+$$ \text{Area}_i = 2\pi \cdot \left( \frac{g_{i-1} + g_i}{2} \right) \cdot (\theta_i - \theta_{i-1}) $$
+where $g(\theta) = \sigma(\theta) \sin(\theta)$.
+
+The cumulative integral at point $i$ is then:
+$$ \text{Integral}_i = \text{Integral}_{i-1} + \text{Area}_i $$
+
+### 3. Normalization
+
+The final step is to normalize the cumulative integral. To do this, you divide each value in the cumulative integral column by the final, total value (the integral up to 180 degrees).
+
+## R-Script Implementation
+
+The following R script automates this entire process. It reads a data file, performs the power-law fit for the first interval, and then iterates through the remaining points using the trapezoidal rule.
+
+```r
+library(tidyverse)
+
+# --- CONFIGURATION ---
+# Replace this with the path to your data file
+# The file should have two columns: "theta" (in degrees) and "sigma"
+data_file_path <- "spf.txt"
+
+
+# --- DATA LOADING AND PREPARATION ---
+
+# Read the data and ensure angles are in radians
+spf_data <- read.table(data_file_path, header = TRUE, sep = "\t") %>%
+  mutate(theta_rad = theta * pi / 180) %>%
+  arrange(theta_rad)
+
+# --- CALCULATION ---
+
+# 1. First Interval: Power-Law Extrapolation
+
+# Get the first two points
+theta_1 <- spf_data$theta_rad[1]
+sigma_1 <- spf_data$sigma[1]
+theta_2 <- spf_data$theta_rad[2]
+sigma_2 <- spf_data$sigma[2]
+
+# Step 1.1: Calculate the slope 'm'
+m <- (log(sigma_2) - log(sigma_1)) / (log(theta_2) - log(theta_1))
+
+# Step 1.2: Calculate the constant 'C'
+# C = sigma_1 / (theta_1^m) -> log(C) = log(sigma1) - m*log(theta1)
+log_C <- log(sigma_1) - m * log(theta_1)
+C <- exp(log_C)
+
+# Step 1.3: Calculate the integral for the first interval [0, theta_1]
+# Using the analytical formula: 2 * pi * C * (theta_1^(m+2)) / (m+2)
+integral_cumulative <- (2 * pi * C * (theta_1^(m + 2))) / (m + 2)
+
+# Create a vector to store the results
+cumulative_integral_values <- numeric(nrow(spf_data))
+cumulative_integral_values[1] <- integral_cumulative
+
+
+# 2. Subsequent Intervals: Cumulative Trapezoidal Rule
+
+# Calculate the integrand g(theta) = sin(theta) * sigma
+spf_data <- spf_data %>%
+  mutate(g_theta = sin(theta_rad) * sigma)
+
+# Loop from the second point to the end of the data
+if (nrow(spf_data) > 1) {
+  for (i in 2:nrow(spf_data)) {
+    
+    # Area of the trapezoid between point i-1 and i
+    trapezoid_area <- (spf_data$g_theta[i-1] + spf_data$g_theta[i]) / 2 * 
+                      (spf_data$theta_rad[i] - spf_data$theta_rad[i-1])
+    
+    # Add the area (multiplied by 2*pi) to the previous cumulative total
+    integral_cumulative <- integral_cumulative + (2 * pi * trapezoid_area)
+    
+    # Store the new cumulative value
+    cumulative_integral_values[i] <- integral_cumulative
+  }
+}
+
+# 3. Normalization
+total_scattering_s <- tail(cumulative_integral_values, 1)
+
+# Add final results to the data frame
+spf_data$integral <- cumulative_integral_values
+spf_data$norm_integral <- spf_data$integral / total_scattering_s
+
+
+# --- VIEW RESULTS ---
+# Print the final data frame with the calculated integrals
+print(head(spf_data))
+print(tail(spf_data))
+
+```
