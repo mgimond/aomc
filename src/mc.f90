@@ -128,6 +128,7 @@ PROGRAM mc
   REAL      :: randangle   !Randomly generated angle
   REAL      :: sumfrac     !cumulitive summary of cumputed fracscat()
   REAL      :: ai          !Angle in rad
+  REAL      :: alpha1, alpha2 ! Upper and lower bound of bins
   REAL      :: sr          !Solid angle
   REAL      :: R_aop, mu_up_aop, mu_down_aop, mu_aop, rd_aop, rup_aop, pld_aop, plu_aop
   REAL      :: ed_sum_aop, eu_sum_aop, eou_sum_aop, eod_sum_aop, efwd_plus_eback_aop
@@ -1917,6 +1918,9 @@ PROGRAM mc
 
               ai = ( PI * REAL(jj - 1) / alphaint ) + nalpha / 2.
               sr = SIN( ai ) * nalpha * nphi * ABS( COS( ai ) )
+!              alpha1 = (jj-1) * nalpha 
+!			  alpha2 = jj * nalpha
+!			  sr = nphi * (cos(alpha1) - cos(alpha2))
               rad( :,:,:,:,jj,: ) = REAL( n(:,:,:,:,jj,:) ) / sr
 
  !          ELSE IF ( jj /= 1 .AND. jj /= alphaint) THEN  

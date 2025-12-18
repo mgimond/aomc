@@ -48,7 +48,7 @@ SUBROUTINE logbin(xint,yint,k,lam)
      t = INT( theta / nalpha ) + limit                 
 
      ! The following logging technique applies to a spherical grid
-     ! whose delta soine are equal over the entire sphere (hence, differing
+     ! whose delta cosine are equal over the entire sphere (hence, differing
      ! delta alpha)
 
   ELSE
