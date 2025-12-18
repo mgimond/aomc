@@ -1,4 +1,4 @@
-!     Last change:  MG   05 Dec 2025    
+!     Last change:  MG   18 Dec 2025    
 PROGRAM mc
 
   ! Purpose:
@@ -22,6 +22,7 @@ PROGRAM mc
   !  12/05/2025  Manuel Gimond        Update license
   !  12/05/2025  Manuel Gimond        Replaced custom RNG with intrinsic RNG in modules.f90
   !  12/07/2025  Manuel Gimond		  Change recording of output aop.out and rad.out
+  !  12/18/2025  Manuel Gimond		  Changed radiance calculations
   !
   ! License/Disclaimer
   ! ------------------
@@ -129,12 +130,14 @@ PROGRAM mc
   REAL      :: sumfrac     !cumulitive summary of cumputed fracscat()
   REAL      :: ai          !Angle in rad
   REAL      :: alpha1, alpha2 ! Upper and lower bound of bins
+  REAL      :: dmu
+  REAL      :: mu_low, mu_high ! Bin parameters for angint=0
   REAL      :: sr          !Solid angle
   REAL      :: R_aop, mu_up_aop, mu_down_aop, mu_aop, rd_aop, rup_aop, pld_aop, plu_aop
   REAL      :: ed_sum_aop, eu_sum_aop, eou_sum_aop, eod_sum_aop, efwd_plus_eback_aop
   REAL      :: R_val, Lu_val, Lua_val, ed_sum_0, norma_val
   REAL, ALLOCATABLE, DIMENSION(:) :: rad_vals_row
-  REAL      :: dmu
+
 
 
   WRITE(*,'(7(A60,/))')                                             &
@@ -301,7 +304,7 @@ PROGRAM mc
   ! ----------------------------------------------------------
 
   nalpha       = PI / REAL( alphaint )
-  nphi         = 2 * PI /phiint
+  nphi         = 2 * PI / REAL(phiint)
   muu          = phiint / ( (REAL(alphaint) /2. -1 )* phiint +1 )
   mum          = muu / phiint
 
@@ -1915,48 +1918,33 @@ PROGRAM mc
         ALPHA_LOOP: DO  jj = 1, ( alphaint )
 
            IF  (angint == 1 ) THEN
+              alpha1 = (jj-1) * nalpha 
+			  alpha2 = jj * nalpha   
+           ELSE  ! angint == 0
+              mu_high = 1.0 - (REAL(jj-1) * 2.0 / REAL(alphaint))
+              mu_low = 1.0 - (REAL(jj) * 2.0 / REAL(alphaint))
+              alpha1 = ACOS(mu_high)
+              alpha2 = ACOS(mu_low)
+           END IF  
+		  
+           IF (alpha2 <= PI/2.0) THEN
+    	      sr = 0.5 * ( SIN(alpha2)**2 - SIN(alpha1)**2 ) * nphi
+		   ELSEIF (alpha1 >= PI/2.0) THEN
+		      sr = 0.5 * ( SIN(alpha1)**2 - SIN(alpha2)**2 ) * nphi
+		   ELSE
+ 		      sr = 0.5 * ( 2.0 - SIN(alpha1)**2 - SIN(alpha2)**2 ) * nphi
+		   END IF
+      
+	       rad( :,:,:,:,jj,: ) = REAL( n(:,:,:,:,jj,:) ) / sr   
 
-              ai = ( PI * REAL(jj - 1) / alphaint ) + nalpha / 2.
-              sr = SIN( ai ) * nalpha * nphi * ABS( COS( ai ) )
-!              alpha1 = (jj-1) * nalpha 
-!			  alpha2 = jj * nalpha
-!			  sr = nphi * (cos(alpha1) - cos(alpha2))
-              rad( :,:,:,:,jj,: ) = REAL( n(:,:,:,:,jj,:) ) / sr
-
- !          ELSE IF ( jj /= 1 .AND. jj /= alphaint) THEN  
-           ELSE
-              ai =  ( ACOS(-(jj - REAL(alphaint)/2. -1) * muu) +   &
-                   ACOS(-(jj - REAL(alphaint)/2.) * muu)) /2.
-              sr = 2 * PI / ( ( alphaint / 2 - 1 )*phiint + 1)
-              rad( :,:,:,:,jj,: ) = REAL( n( :,:,:,:,jj,:) ) / (sr * ABS( COS( ai))) 
-
-           END IF
-
-        END DO ALPHA_LOOP
-
+         END DO ALPHA_LOOP
+     
+        ! Compute polar radiances Lu and Ld
         DO ii = -sidebound , sidebound
            DO jj =  -sidebound , sidebound
               DO kk = -1 , numlogly 
-
-                 IF(angint == 1) THEN
-                    polar_ld(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,1,:)) ) / ( 2 * pi * (1 - COS( nalpha )) )
-                    polar_lu(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,alphaint,:)) ) / ( 2 * pi * (1 - COS( nalpha )) )
-
-                    rad( lam,ii,jj,kk,1,:  ) = REAL( n(lam,ii,jj,kk,1,:) ) / ( nphi * (1 - COS( nalpha )) )
-                    rad( lam,ii,jj,kk,alphaint,: ) = REAL( n(lam,ii,jj,kk,alphaint,:) ) / ( nphi * (1 - COS( nalpha )) )
-                 ELSE
-                    ! For angint=0 (equal cosine), dmu = 2.0 / alphaint.
-                    ! Solid angle of the entire polar cap = 2 * PI * dmu.
-                    polar_ld(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,1,:)) ) / (2.0 * PI * (2.0 / REAL(alphaint)))
-                    polar_lu(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,alphaint,:)) ) / (2.0 * PI * (2.0 / REAL(alphaint)))
-
-                    ! Solid angle of a single bin in the polar cap = dmu * dphi = (2/alphaint) * (2*PI/phiint)
-                    rad( lam,ii,jj,kk,1,: ) = REAL( n(lam,ii,jj,kk,1,:) ) / &
-                                            ((2.0 / REAL(alphaint)) * (2.0 * PI / REAL(phiint)))
-                    rad( lam,ii,jj,kk,alphaint,: ) = REAL( n(lam,ii,jj,kk,alphaint,:) ) / &
-                                                     ((2.0 / REAL(alphaint)) * (2.0 * PI / REAL(phiint)))
-                 END IF
-
+                 polar_ld(lam,ii,jj,kk) = SUM( rad(lam,ii,jj,kk,1,:) ) / REAL(phiint)
+				 polar_lu(lam,ii,jj,kk) = SUM( rad(lam,ii,jj,kk,alphaint,:) ) / REAL(phiint)
               END DO
            END DO
         END DO

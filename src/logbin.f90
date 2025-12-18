@@ -1,4 +1,4 @@
-!     Last change:  MG   20 Mar 2003    3:03 pm
+!     Last change:  MG   18 Dec 2025   
 SUBROUTINE logbin(xint,yint,k,lam)
 
   USE math_global
@@ -23,7 +23,8 @@ SUBROUTINE logbin(xint,yint,k,lam)
   !     Date     Programmer           Description of change
   !     ====     ==========           =====================
   !  12/31/2002  Manuel Gimond        Original code
-
+  !  12/18/2025  Manuel Gimond        Simplified binning method for angint=0
+  
   INTEGER,INTENT(IN)   :: k    ! ID of layer interface
   REAL,INTENT(IN)      :: xint ! X position on interval k
   REAL,INTENT(IN)      :: yint ! Y position on interval k
@@ -41,52 +42,17 @@ SUBROUTINE logbin(xint,yint,k,lam)
   END IF
 
   ! ---------------------------- SELECT OPTION -------------------------------
-  ! The following logging technique applies to a spherical grid
-  ! whose delta alpha are equal over the entire sphere
-
   IF ( angint == 1) THEN
-     t = INT( theta / nalpha ) + limit                 
-
-     ! The following logging technique applies to a spherical grid
-     ! whose delta cosine are equal over the entire sphere (hence, differing
-     ! delta alpha)
-
-  ELSE
-
-     IF ( COS(theta) > (1 - mum) ) THEN  ! Downward polar cap
-
-        t = 1
-
-     ELSE IF (COS(theta) < (mum -1 )) THEN ! Upward polar cap
-
+     ! For angint=1, bins are of equal theta angle size.
+     t = INT( theta / nalpha ) + limit
+  ELSE  ! angint == 0
+     ! For angint=0, bins are of equal cosine(theta) size.
+     ! Bin is determined by mapping cos(theta) from [1, -1] to [1, alphaint].
+     IF (theta >= PI) THEN
         t = alphaint
-
-     ELSE IF (COS(theta) >= 0 ) THEN
-
-        DO t = 2 , alphaint/2
-
-           IF ( COS(theta) < ( (1-mum) - (t-2)*muu) .AND. COS(theta) > ( (1-mum) - (t-1)*muu) ) THEN
-
-              EXIT
-
-           END IF
-
-        END DO
-
      ELSE
-
-        DO t =  (alphaint/2 +1) , (alphaint -1) 
-
-           IF( COS(theta) < (-(t - REAL(alphaint)/2. -1) * muu) .AND. COS(theta) > (-(t - REAL(alphaint)/2.) * muu)) THEN
-
-              EXIT
-
-           END IF
-
-        END DO
-
+        t = INT( (1.0 - COS(theta)) * (REAL(alphaint) / 2.0) ) + 1
      END IF
-
   END IF
 
   p = INT( phi / nphi ) + 1        ! since phi is never 2PI, no need to check 'limit'
