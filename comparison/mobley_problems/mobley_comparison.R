@@ -1,7 +1,7 @@
 library(tidyverse)
 
 # Figure 8 comparison
-aomc <- read_csv("prob2_aomc_rad.csv")
+aomc <- read_csv("prob2_aomc_rad.csv")  # This is the rad formatted df from make_long_rad
 mobley <- read_csv("mobley_fig8.csv")
 
 # Tau = 0 (Depth = 0)
@@ -55,6 +55,27 @@ fig8_aomc_tau20 <- aomc %>% filter(depth == 2.0,
 fig8_mobley_tau20 <- mobley %>% filter(tau == 20)
 
 ggplot(fig8_aomc_tau20, aes(x=alpha, y = radiance)) + geom_line() +
+  geom_line(data = fig8_mobley_tau20, aes(x=alpha, y = radiance), lty=2,
+            col = "grey30") +
+  scale_y_log10(
+    breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100),
+    limits = c(0.0001, 100),
+    labels = scales::label_number(drop0trailing = TRUE),
+    minor_breaks = FALSE) +
+  guides(y = guide_axis_logticks())+
+  scale_x_continuous(breaks = seq(0, 360, 45))
+
+# COmbined plots
+
+ggplot(fig8_aomc_tau0, aes(x=alpha, y = radiance)) + geom_line() +
+  geom_line(data = fig8_mobley_tau0, aes(x=alpha, y = radiance), lty=2,
+            col = "grey30") +
+  geom_line(data = fig8_aomc_tau5, aes(x=alpha, y = radiance), lty=1,
+            col = "grey30") +
+  geom_line(data = fig8_mobley_tau5, aes(x=alpha, y = radiance), lty=2,
+            col = "grey30") +
+  geom_line(data = fig8_aomc_tau20, aes(x=alpha, y = radiance), lty=1,
+            col = "grey30") +
   geom_line(data = fig8_mobley_tau20, aes(x=alpha, y = radiance), lty=2,
             col = "grey30") +
   scale_y_log10(
