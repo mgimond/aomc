@@ -11,7 +11,9 @@ website:
       - href: index.qmd
         text: Home
       - href: input_docs/theory.qmd
-        text: Model Theory
+        text: Theory
+      - href: input_docs/model_implementation.qmd
+        text: Implementation
       - text: "Input Files"
         menu:
           - href: input_docs/amc_inp.qmd
@@ -50,8 +52,9 @@ website:
        
 format:
    html:
-     theme: cosmo  
-     toc: true     
-     code-fold: true 
+     theme: cosmo
+     toc: true
+     toc-depth: 4
+     code-fold: true
      math:
        method: katex

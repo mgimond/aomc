@@ -40,7 +40,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-8675d7fdfc424feb08d1bc3935219611.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-24935aeabc4d3023e3796398fce5239e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -128,7 +128,11 @@ window.Quarto = {
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./input_docs/theory.html"> 
-<span class="menu-text">Model Theory</span></a>
+<span class="menu-text">Theory</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./input_docs/model_implementation.html"> 
+<span class="menu-text">Implementation</span></a>
   </li>  
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-input-files" role="link" data-bs-toggle="dropdown" aria-expanded="false">
@@ -226,6 +230,7 @@ window.Quarto = {
   <li><a href="#what-is-the-aomc-model" id="toc-what-is-the-aomc-model" class="nav-link active" data-scroll-target="#what-is-the-aomc-model">What is the AOMC model?</a></li>
   <li><a href="#what-will-the-model-simulate" id="toc-what-will-the-model-simulate" class="nav-link" data-scroll-target="#what-will-the-model-simulate">What will the model simulate?</a></li>
   <li><a href="#how-do-i-compile-the-code" id="toc-how-do-i-compile-the-code" class="nav-link" data-scroll-target="#how-do-i-compile-the-code">How do I compile the code?</a></li>
+  <li><a href="#running-the-model" id="toc-running-the-model" class="nav-link" data-scroll-target="#running-the-model">Running the model</a></li>
   <li><a href="#input-file-documentation" id="toc-input-file-documentation" class="nav-link" data-scroll-target="#input-file-documentation">Input File Documentation</a></li>
   </ul>
 </nav>
@@ -259,11 +264,16 @@ window.Quarto = {
 <li>Shape factors (as used in the two-flow or two-stream model)</li>
 <li>Surface Albedo</li>
 </ul>
-<p>A detailed description of the underlying radiative transfer theory can be found in the <a href="./input_docs/theory.html">Model Theory document</a>.</p>
+<p>A detailed description of the underlying radiative transfer theory can be found in the <a href="./input_docs/theory.html">Model Theory document</a> and the <a href="./input_docs/model_implementation.html">Model Implementation document</a>.</p>
 </section>
 <section id="how-do-i-compile-the-code" class="level2">
 <h2 class="anchored" data-anchor-id="how-do-i-compile-the-code">How do I compile the code?</h2>
 <p>Compilation instructions can be found on the <a href="./input_docs/compilation.html">Compilation</a> page.</p>
+</section>
+<section id="running-the-model" class="level2">
+<h2 class="anchored" data-anchor-id="running-the-model">Running the model</h2>
+<p>To run the <code>aomc</code> model, execute the compiled <code>aomc</code> executable from within a project folder that contains all the necessary input files. It is crucial to note that the input file names (e.g., <code>amc.inp</code>, <code>abs.inp</code>) are hard-coded into the model’s source code. Therefore, these files must be present in the directory from which the model is executed.</p>
+<p>Careful attention must be paid to the format and content of these input files. Incorrect formatting or missing data will lead to errors. It is highly recommended to thoroughly read the <a href="#input-file-documentation">Input File Documentation</a> to ensure proper setup.</p>
 </section>
 <section id="input-file-documentation" class="level2">
 <h2 class="anchored" data-anchor-id="input-file-documentation">Input File Documentation</h2>

@@ -40,7 +40,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-8675d7fdfc424feb08d1bc3935219611.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-24935aeabc4d3023e3796398fce5239e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -128,7 +128,11 @@ window.Quarto = {
   </li>  
   <li class="nav-item">
     <a class="nav-link active" href="../input_docs/theory.html" aria-current="page"> 
-<span class="menu-text">Model Theory</span></a>
+<span class="menu-text">Theory</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../input_docs/model_implementation.html"> 
+<span class="menu-text">Implementation</span></a>
   </li>  
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-input-files" role="link" data-bs-toggle="dropdown" aria-expanded="false">
@@ -223,21 +227,15 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#aomc-radiative-transfer-theory-and-model-implementation" id="toc-aomc-radiative-transfer-theory-and-model-implementation" class="nav-link active" data-scroll-target="#aomc-radiative-transfer-theory-and-model-implementation">AOMC: Radiative Transfer Theory and Model Implementation</a>
+  <li><a href="#aomc-radiative-transfer-theory" id="toc-aomc-radiative-transfer-theory" class="nav-link active" data-scroll-target="#aomc-radiative-transfer-theory">AOMC: Radiative Transfer Theory</a>
+  <ul>
+  <li><a href="#theory-of-radiative-transfer" id="toc-theory-of-radiative-transfer" class="nav-link" data-scroll-target="#theory-of-radiative-transfer">Theory of Radiative Transfer</a></li>
+  <li><a href="#inherent-optical-properties-iops" id="toc-inherent-optical-properties-iops" class="nav-link" data-scroll-target="#inherent-optical-properties-iops">Inherent Optical Properties (IOPs)</a>
   <ul class="collapse">
-  <li><a href="#theory-of-radiative-transfer" id="toc-theory-of-radiative-transfer" class="nav-link" data-scroll-target="#theory-of-radiative-transfer">1. Theory of Radiative Transfer</a>
-  <ul class="collapse">
-  <li><a href="#inherent-optical-properties-iops" id="toc-inherent-optical-properties-iops" class="nav-link" data-scroll-target="#inherent-optical-properties-iops">Inherent Optical Properties (IOPs)</a></li>
+  <li><a href="#absorption-and-scattering" id="toc-absorption-and-scattering" class="nav-link" data-scroll-target="#absorption-and-scattering">Absorption and Scattering</a></li>
+  <li><a href="#additivity-of-iops" id="toc-additivity-of-iops" class="nav-link" data-scroll-target="#additivity-of-iops">Additivity of IOPs</a></li>
   </ul></li>
-  <li><a href="#the-aomc-model-implementation" id="toc-the-aomc-model-implementation" class="nav-link" data-scroll-target="#the-aomc-model-implementation">2. The AOMC Model Implementation</a>
-  <ul class="collapse">
-  <li><a href="#photon-initialization" id="toc-photon-initialization" class="nav-link" data-scroll-target="#photon-initialization">Photon Initialization</a></li>
-  <li><a href="#the-air-water-interface" id="toc-the-air-water-interface" class="nav-link" data-scroll-target="#the-air-water-interface">The Air-Water Interface</a></li>
-  <li><a href="#path-length-determination" id="toc-path-length-determination" class="nav-link" data-scroll-target="#path-length-determination">Path Length Determination</a></li>
-  <li><a href="#absorption-or-scattering" id="toc-absorption-or-scattering" class="nav-link" data-scroll-target="#absorption-or-scattering">Absorption or Scattering</a></li>
-  <li><a href="#scattering-process" id="toc-scattering-process" class="nav-link" data-scroll-target="#scattering-process">Scattering Process</a></li>
-  <li><a href="#boundary-interactions-and-termination" id="toc-boundary-interactions-and-termination" class="nav-link" data-scroll-target="#boundary-interactions-and-termination">Boundary Interactions and Termination</a></li>
-  </ul></li>
+  <li><a href="#the-volume-scattering-function-vsf" id="toc-the-volume-scattering-function-vsf" class="nav-link" data-scroll-target="#the-volume-scattering-function-vsf">The Volume Scattering Function (VSF)</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -248,17 +246,18 @@ window.Quarto = {
 
 
 
-<section id="aomc-radiative-transfer-theory-and-model-implementation" class="level1">
-<h1>AOMC: Radiative Transfer Theory and Model Implementation</h1>
+<section id="aomc-radiative-transfer-theory" class="level1">
+<h1>AOMC: Radiative Transfer Theory</h1>
 <p>This document provides a summary of the theoretical basis for the AOMC model.</p>
 <section id="theory-of-radiative-transfer" class="level2">
-<h2 class="anchored" data-anchor-id="theory-of-radiative-transfer">1. Theory of Radiative Transfer</h2>
+<h2 class="anchored" data-anchor-id="theory-of-radiative-transfer">Theory of Radiative Transfer</h2>
 <p>The propagation of light through an aquatic medium is governed by the Radiative Transfer Equation (RTE). The RTE accounts for the various ways light can be absorbed and scattered as it interacts with water and its dissolved and particulate constituents. The key to solving the RTE lies in characterizing the Inherent Optical Properties (IOPs) of the medium. IOPs are properties that depend only on the substances in the medium, not on the ambient light field.</p>
-<section id="inherent-optical-properties-iops" class="level3">
-<h3 class="anchored" data-anchor-id="inherent-optical-properties-iops">Inherent Optical Properties (IOPs)</h3>
+</section>
+<section id="inherent-optical-properties-iops" class="level2">
+<h2 class="anchored" data-anchor-id="inherent-optical-properties-iops">Inherent Optical Properties (IOPs)</h2>
 <p>The primary IOPs that determine the fate of light are:</p>
-<section id="absorption-and-scattering" class="level4">
-<h4 class="anchored" data-anchor-id="absorption-and-scattering">Absorption and Scattering</h4>
+<section id="absorption-and-scattering" class="level3">
+<h3 class="anchored" data-anchor-id="absorption-and-scattering">Absorption and Scattering</h3>
 <ul>
 <li><strong>Absorption Coefficient (<span class="math inline">\(a\)</span>):</strong> The fraction of radiant energy absorbed by the medium per unit path length (units: m⁻¹).</li>
 <li><strong>Scattering Coefficient (<span class="math inline">\(b\)</span>):</strong> The fraction of radiant energy scattered by the medium per unit path length (units: m⁻¹).</li>
@@ -270,79 +269,19 @@ c(\lambda) = a(\lambda) + b(\lambda)
 \omega_0(\lambda) = \frac{b(\lambda)}{c(\lambda)}
 \]</span></p>
 </section>
-<section id="additivity-of-iops" class="level4">
-<h4 class="anchored" data-anchor-id="additivity-of-iops">Additivity of IOPs</h4>
+<section id="additivity-of-iops" class="level3">
+<h3 class="anchored" data-anchor-id="additivity-of-iops">Additivity of IOPs</h3>
 <p>For a medium containing multiple constituents (e.g., pure water, phytoplankton, sediments), the bulk IOPs are the sum of the contributions from each constituent. The contribution of each constituent is its concentration (<span class="math inline">\(C_i\)</span>) multiplied by its specific absorption or scattering coefficient (<span class="math inline">\(a_i^*\)</span> or <span class="math inline">\(b_i^*\)</span>).</p>
 <p>The bulk absorption coefficient is given by: <span class="math display">\[ a(\lambda) = a_w(\lambda) + \sum_{i=1}^{N} a_i^*(\lambda)C_i \]</span> The bulk scattering coefficient is given by: <span class="math display">\[ b(\lambda) = b_w(\lambda) + \sum_{i=1}^{N} b_i^*(\lambda)C_i \]</span> where the subscript <span class="math inline">\(w\)</span> refers to pure water and <span class="math inline">\(i\)</span> refers to the i-th constituent.</p>
 </section>
-<section id="the-volume-scattering-function-vsf" class="level4">
-<h4 class="anchored" data-anchor-id="the-volume-scattering-function-vsf">The Volume Scattering Function (VSF)</h4>
+</section>
+<section id="the-volume-scattering-function-vsf" class="level2">
+<h2 class="anchored" data-anchor-id="the-volume-scattering-function-vsf">The Volume Scattering Function (VSF)</h2>
 <p>While the scattering coefficient <span class="math inline">\(b\)</span> describes the total amount of scattering, the <strong>Volume Scattering Function (VSF)</strong>, <span class="math inline">\(\beta(\psi, \lambda)\)</span>, describes the angular distribution of the scattered light. It is defined as the radiant intensity scattered from a small volume element in a given direction <span class="math inline">\(\psi\)</span> per unit of incident irradiance (units: m⁻¹ sr⁻¹).</p>
 <p>The scattering coefficient <span class="math inline">\(b\)</span> is the integral of the VSF over all solid angles: <span class="math display">\[ b(\lambda) = 2\pi \int_{0}^{\pi} \beta(\psi, \lambda) \sin(\psi) d\psi \]</span> A normalized version of the VSF, known as the <strong>scattering phase function (<span class="math inline">\(\tilde{\beta}\)</span>)</strong>, gives the probability distribution of a scattering event at a given angle: <span class="math display">\[ \tilde{\beta}(\psi, \lambda) = \frac{\beta(\psi, \lambda)}{b(\lambda)} \]</span></p>
-</section>
-</section>
-</section>
-<section id="the-aomc-model-implementation" class="level2">
-<h2 class="anchored" data-anchor-id="the-aomc-model-implementation">2. The AOMC Model Implementation</h2>
-<p>The AOMC model uses the <strong>Monte Carlo method</strong> to solve the RTE. This statistical approach simulates the individual life histories of a large number of photons. By tracking the fate of each photon, the model reconstructs the macroscopic light field (e.g., radiance and irradiance) throughout the water body.</p>
-<p>The life cycle of a single photon is simulated as follows:</p>
-<section id="photon-initialization" class="level3">
-<h3 class="anchored" data-anchor-id="photon-initialization">Photon Initialization</h3>
-<ul>
-<li>A photon is generated above the air-water interface. Its initial direction is determined by the sky radiance distribution, which can be either a simple model with direct and diffuse components (<code>difcol.inp</code>) or a tabulated distribution from a file (<code>skydist.inp</code>).</li>
-</ul>
-</section>
-<section id="the-air-water-interface" class="level3">
-<h3 class="anchored" data-anchor-id="the-air-water-interface">The Air-Water Interface</h3>
-<ul>
-<li>When the photon strikes the surface, <strong>Fresnel’s equations</strong> are used with a random number to determine if it is reflected or transmitted into the water.</li>
-<li>If the photon is transmitted, <strong>Snell’s Law</strong> is used to calculate its new, refracted angle of travel within the water.</li>
-</ul>
-</section>
-<section id="path-length-determination" class="level3">
-<h3 class="anchored" data-anchor-id="path-length-determination">Path Length Determination</h3>
-<ul>
-<li>The distance the photon travels between interactions is its optical path length. This step size, <span class="math inline">\(\Delta l\)</span>, is determined probabilistically using the beam attenuation coefficient <span class="math inline">\(c(\lambda)\)</span> and a random number, <span class="math inline">\(\xi_1\)</span>, uniformly distributed between 0 and 1: <span class="math display">\[ \Delta l = -\frac{\ln(\xi_1)}{c(\lambda)} \]</span></li>
-</ul>
-</section>
-<section id="absorption-or-scattering" class="level3">
-<h3 class="anchored" data-anchor-id="absorption-or-scattering">Absorption or Scattering</h3>
-<ul>
-<li>After traveling the distance <span class="math inline">\(\Delta l\)</span>, the photon interacts with the medium. A decision is made to either absorb or scatter the photon.</li>
-<li>A new random number, <span class="math inline">\(\xi_2\)</span>, is generated and compared to the single-scattering albedo, <span class="math inline">\(\omega_0(\lambda)\)</span>.
-<ul>
-<li>If <span class="math inline">\(\xi_2 \le \omega_0(\lambda)\)</span>, the photon is <strong>scattered</strong>.</li>
-<li>If <span class="math inline">\(\xi_2 &gt; \omega_0(\lambda)\)</span>, the photon is <strong>absorbed</strong>, and its simulation is terminated.</li>
-</ul></li>
-</ul>
-</section>
-<section id="scattering-process" class="level3">
-<h3 class="anchored" data-anchor-id="scattering-process">Scattering Process</h3>
-<ul>
-<li>If the photon is scattered, its direction must change.
-<ol type="1">
-<li><strong>Select Constituent:</strong> The model first determines which constituent particle scattered the photon. This is a random choice weighted by the relative scattering contribution of each constituent at that wavelength.</li>
-<li><strong>Select New Angle:</strong> The model then uses the cumulative scattering phase function for that specific particle (from <code>spf.inp</code>) as a probability table. A new random number, <span class="math inline">\(\xi_3\)</span>, is generated to select a new polar scattering angle, <span class="math inline">\(\theta\)</span>. A uniformly distributed random number determines the azimuthal scattering angle, <span class="math inline">\(\phi\)</span>.</li>
-</ol></li>
-</ul>
-</section>
-<section id="boundary-interactions-and-termination" class="level3">
-<h3 class="anchored" data-anchor-id="boundary-interactions-and-termination">Boundary Interactions and Termination</h3>
-<p>The photon’s life ends when one of the following occurs:</p>
-<ol type="1">
-<li>It is <strong>absorbed</strong> within the water column.</li>
-<li>It scatters upward and passes back out through the <strong>air-water interface</strong>.</li>
-<li>It hits a <strong>side boundary</strong> of the model domain.</li>
-<li>It strikes the <strong>bottom boundary</strong>. At the bottom, a random number is compared to the bottom reflectance (<span class="math inline">\(R_b\)</span>) from <code>lambbot.inp</code>.
-<ul>
-<li>If absorbed, the photon is terminated.</li>
-<li>If reflected, another random number determines if the reflection is specular (mirror-like) or diffuse (Lambertian), and the photon’s journey continues in an upward direction.</li>
-</ul></li>
-</ol>
 
 
 
-</section>
 </section>
 </section>
 

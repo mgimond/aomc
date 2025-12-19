@@ -1,4 +1,4 @@
-!     Last change:  MG   18 Dec 2025    
+!     Last change:  MG   19 Dec 2025    
 PROGRAM mc
 
   ! Purpose:
@@ -22,7 +22,7 @@ PROGRAM mc
   !  12/05/2025  Manuel Gimond        Update license
   !  12/05/2025  Manuel Gimond        Replaced custom RNG with intrinsic RNG in modules.f90
   !  12/07/2025  Manuel Gimond		  Change recording of output aop.out and rad.out
-  !  12/18/2025  Manuel Gimond		  Changed radiance calculations
+  !  12/19/2025  Manuel Gimond		  Changed radiance calculations, reformat aop.out precision
   !
   ! License/Disclaimer
   ! ------------------
@@ -145,7 +145,7 @@ PROGRAM mc
        '       Aquatic Optics Monte Carlo Model            ',&
        '       A       O      M     C                      ',&
        '                                                   ',&
-       '       Version 1.2                                 ',&
+       '       Version 1.2.1                                 ',&
        '                                                   ',&
        '       Original Author: Manuel Gimond              ',&
        '==================================================='
@@ -1943,8 +1943,25 @@ PROGRAM mc
         DO ii = -sidebound , sidebound
            DO jj =  -sidebound , sidebound
               DO kk = -1 , numlogly 
-                 polar_ld(lam,ii,jj,kk) = SUM( rad(lam,ii,jj,kk,1,:) ) / REAL(phiint)
-				 polar_lu(lam,ii,jj,kk) = SUM( rad(lam,ii,jj,kk,alphaint,:) ) / REAL(phiint)
+!               polar_ld(lam,ii,jj,kk) = SUM( rad(lam,ii,jj,kk,1,:) ) / REAL(phiint)
+!				 polar_lu(lam,ii,jj,kk) = SUM( rad(lam,ii,jj,kk,alphaint,:) ) / REAL(phiint)
+          IF(angint == 1) THEN                                                     
+             polar_ld(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,1,:)) ) / ( 2 * pi * (1.0 - COS( nalpha )) )                                                           
+             polar_lu(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,alphaint,:)) ) / ( 2 * pi * (1.0 - COS( nalpha )) )                                                    
+                                                                                   
+!             rad( lam,ii,jj,kk,1,: ) = REAL( n(lam,ii,jj,kk,1,:) ) / ( nphi * (1.0 - COS( nalpha )) )                                                                  
+!             rad( lam,ii,jj,kk,alphaint,: ) = REAL( n(lam,ii,jj,kk,alphaint,:) ) / ( nphi * (1.0 - COS( nalpha )) )                                                    
+          ELSE                                                                     
+             ! For angint=0 (equal cosine), dmu = 2.0 / alphaint. Solid angle of the entire polar cap = 2 * PI * dmu.                 
+             polar_ld(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,1,:)) ) / (2.0 * PI * (2.0 / REAL(alphaint)))                                                        
+             polar_lu(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,alphaint,:)) ) / ( 2.0 * PI * (2.0 / REAL(alphaint)))                                                  
+                                                                                   
+             ! Solid angle of a single bin in the polar cap = dmu * dphi = (2/alphaint) * (2*PI/phiint)                                                        
+ !            rad( lam,ii,jj,kk,1,: ) = REAL( n(lam,ii,jj,kk,1,:) ) / &             
+ !                 ((2.0 / REAL(alphaint)) * (2.0 * PI / REAL(phiint)))             
+ !            rad( lam,ii,jj,kk,alphaint,: ) = REAL( n(lam,ii,jj,kk,alphaint,:) ) / &                                                                                   
+ !                 ((2.0 / REAL(alphaint)) * (2.0 * PI / REAL(phiint)))             
+          END IF  
               END DO
            END DO
         END DO
@@ -2132,7 +2149,7 @@ PROGRAM mc
                  plu_aop = 0.0
               END IF
 
-              WRITE(11,'(14(F12.6,2x))') layval(kk), eu_sum_aop, ed_sum_aop, (ed_sum_aop - eu_sum_aop), &
+              WRITE(11,'(14(F12.8,2x))') layval(kk), eu_sum_aop, ed_sum_aop, (ed_sum_aop - eu_sum_aop), &
                 R_aop, eou_sum_aop, eod_sum_aop, mu_up_aop, mu_down_aop, mu_aop, rd_aop, rup_aop, pld_aop, plu_aop
 
            END DO

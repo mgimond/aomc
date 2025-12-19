@@ -1,0 +1,215 @@
+1)Iterations                                  : 1000000
+2)Light source from model(0) or file(1)       : 0
+ a) direct azimuth angle(deg)                 : 0
+ b) direct zenith angle(deg)                  : 0
+3)number of system constituents               : 1
+4)depth (M)                                   : 100.0
+5)side boundaries (M)                         : 10000.0
+6)Number of depth recording layers            : 1
+  a) Thickness of each recording layer        : 1.0
+7)# of alpha intervals to bin (MAX=180)       : 90
+8)# of phi intervals to bin (MAX=180)         : 10
+           Interval type (ang = 1,cos = 0)    : 1
+9)X,Y,Z for absorption (yes=1,no=0)           : 0
+10)BOT.-output(yes=1,no=0)                    : 0
+11)SIDE-output(yes=1,no=0)                    : 0      
+12)SPF from file? (yes=1,no=0)                : 1
+   a) Number of angles                        : 55
+13)# of concentration dependent layers        : 1
+14)Number of cells in X-Y direction(0=NOGRID) : 0
+      Cell size (in unit meters)              : 2.0
+      Output to Surfer format (yes=1,no=0)    : 0
+15)Light source: point[1],circle[2],rect.[3]  : 1
+    a)If circle, define diameter              : 2.0
+    b)If rectangle, define dX                 : 1.0
+    c)          and define dY                 : 10.0
+16)Bottom target: NO[0],YES[1]                : 0
+      define dX                               : 1.0
+      define dY                               : 1.0
+17)Normalize output to air(0) or water(1)     : 1
+18)Number of wavebands (minimum = 1)          : 12
+
+
+######################################################
+#######################################################
+
+1) Number of photons (iterations) to simulate.
+   UNITS  = n/a
+   FORMAT = I12
+   LIMIT  = [0,99999999]
+
+
+2) Use boundary light condition from a lookup table (1) 
+   or let the model generate it from a direct or uniformly
+   diffuse source (1). If data are read from file, skylight
+   distribution must wavelength dependent.
+   UNITS  = n/a
+   FORMAT = I1
+   LIMIT  = [0;1]
+   
+   a) Azimuth angle of specular light source (if using
+      model's skylight distribution module)
+      UNITS  = deg
+      FORMAT = I8
+      LIMIT  = [0,359]
+
+   b) Zenith angle of specular light source. 0deg is the
+      polward angle. (if using model's skylight 
+	distribution module)
+      UNITS  = deg
+      FORMAT = I8
+      LIMIT  = [0,90[
+
+3) Number of water constituents (including water).
+   The minimum value should be 1 to include water.
+   UNITS  = n/a
+   FORMAT = I8
+   LIMIT  = [1,20]
+
+4) Depth of bottom boundary. 
+   UNITS  = meter
+   FORMAT = F12.2
+   LIMIT  = ]0,10000[
+
+5) Width of side boundary (same for both X and Y). If
+   a photon interacts with the side boundary, it is lost 
+   from the system.
+   UNITS  = meter
+   FORMAT = F12.2
+   LIMIT  = ]0,100000[
+
+6) Number of layers in which apparent optical 
+   properties are to be recorded. 
+   UNITS  = n/a
+   FORMAT = I8
+   LIMIT  = [2,500]
+   
+   a) Specify the thickness of the recording layers. If the
+      number of layers are to span the entire water column,
+	set this value to -1.0 ( The actual depth of these
+      recordings will then be calculated from the ratio 
+      (depth)/(depth intervals))
+	UNITS  = meter
+      FORMAT = F12.4
+      LIMIT  = [-1] U ]0,+inf[
+
+7) When the model records a photon's transfer across a layer 
+   interval, it bins the angle of the photon's vector. The
+   bins are divided into equal degrees of latitude.
+   UNITS  = n/a
+   FORMAT = I8
+   LIMIT  = [1,180]
+
+8) When the model records a photon's transfer across a depth 
+   interval, it bins the angle of the photon's vector. The
+   bins are divided into equal degrees of longitude.
+   UNITS  = n/a
+   FORMAT = I8
+   LIMIT  = [1,360]
+    
+   a)The user may opt to have the polward bin concatenated into
+     a single polar bin (polar cap). A value of 1 will create a
+     single polar bin. A value of 0 will break down the polar cap
+     into PHI number of bins.
+     UNITS  = n/a
+     FORMAT = I1
+     LIMIT  = [0;1]
+
+9) The user may request to log all instances of absorption
+   within the water column. The log records the position
+   X, Y, Z of the absorbing event, the total optical pathlength
+   of the photon and it's last angle of propagation.
+   This file is only applicable to single wavelength mode.
+   (1=yes 0=no).  
+   UNITS  = n/a
+   FORMAT = I1
+   LIMIT  = [0;1]    
+
+10) The user may request to log all instances of photons
+    absorbed by the bottom boundary. The log records the 
+    position X, Y, Z of the absorbing event, the total optical 
+    pathlength of the photon and it's last angle of propagation.
+    This file is only applicable to single wavelength mode.
+    (1=yes 0=no).  
+    UNITS  = n/a
+    FORMAT = I1
+    LIMIT  = [0;1]
+
+
+11) The user may request to log all instances of photons
+    absorbed by the side boundary. The log records the 
+    position X, Y, Z of the absorbing event, the total optical 
+    pathlength of the photon and it's last angle of propagation.
+    This file is only applicable to single wavelength mode.
+    (1=yes 0=no).  
+    UNITS  = n/a
+    FORMAT = I1
+    LIMIT  = [0;1]
+
+12) Determine if the cumulative SPF is to be read from a file (1) 
+    or randomly determined from an isotropic function.
+    UNITS  = n/a
+    FORMAT = I1
+    LIMIT  = [0;1]
+ 
+13) Number of layers with different optical characteristics
+    (varying concentrations and refractive index)
+    UNITS  = n/a
+    FORMAT = I8
+    LIMIT  = [1,100]
+
+14) Grid file output: select the number of rows and columns for 
+    the grid output. If a value of 0 is selected, no grid file 
+    will be created.
+    UNITS  = n/a
+    FORMAT = I8
+    LIMIT  = [0,101] (must be odd number)
+    a) Size of each cell (same for dX and dY)
+       UNITS  = meters
+       FORMAT = F12.6
+       LIMIT  = }0,inf[
+    b) If file output is to be in SURFER (Golden Software) format, 
+       only the upwelling radiance from the air/water surface is
+       reported. The SURFER file format is a SURFER GRID ASCII
+       file.
+       UNITS  = n/a
+       FORMAT = I8
+       LIMIT  = [0;1]
+
+15)The light source type can be chosen to be a point (value=1),
+   a circle (value=2) or a rectangle (value=3).
+   UNITS  = n/a
+   FORMAT = I8
+   LIMIT  = [1;2;3]
+   
+   a)If a circular light source is chosen, enter the diameter of
+     the collimated light source.
+     UNITS  = m
+     FORMAT = F12.6
+     LIMIT  = ]0,+inf[
+   b)If a rectangular light source is chosen, enter the X
+     value of its dimensions.
+     UNITS  = m
+     FORMAT = F12.6
+     LIMIT  = ]0,+inf[
+   c)If a rectangular light source is chosen, enter the Y
+     value of its dimensions.
+     UNITS  = m
+     FORMAT = F12.6
+     LIMIT  = ]0,+inf[
+
+16)A bottom target can be specified by the user
+   UNITS  = n/a
+   FORMAT = I8
+   LIMIT  = [1,2]
+   a)The X and Y dimensions of the target need to be specified.
+     UNITS  = meter
+     FORMAT = F12.6
+     LIMIT  = ]0,+inf[
+
+17) Determine if optical properties are to be normalized to the
+    incident radiation impinging on the water surface (0) or to that
+    just below the air-water interface (1).
+     UNITS  = meter
+     FORMAT = F12.6
+     LIMIT  = [0;1]

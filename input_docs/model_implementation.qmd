@@ -1,0 +1,97 @@
+## The AOMC Model Implementation
+
+The AOMC model uses the **Monte Carlo method** to solve the RTE. This statistical approach simulates the individual life histories of a large number of photons. By tracking the fate of each photon, the model reconstructs the macroscopic light field (e.g., radiance and irradiance) throughout the water body.
+
+The simulation is driven by the main program `mc.f90`, which iterates through a predefined number of photons for each specified wavelength.
+
+### Main Program (`mc.f90`) Structure
+
+The `mc.f90` program is the central orchestrator of the AOMC model. Its structure is divided into several logical blocks, each responsible for a specific phase of the simulation:
+
+1.  **Initialization**: Sets up initial variables and seeds the random number generator.
+2.  **Reading General Parameters**: Reads primary simulation parameters from the `amc.inp` file.
+3.  **Allocation of Memory**: Dynamically allocates memory for arrays and variables based on the input parameters.
+4.  **Reading of Input Files**: Reads data from various input files, such as `conc.inp`, `abs.inp`, `scat.inp`, `spf.inp`, `lambbot.inp`, and `difcol.inp` or `skydist.inp`.
+5.  **Calculation of IOPs**: Computes inherent optical properties like beam attenuation and scattering albedo.
+6.  **Run the Model**: Executes the core Monte Carlo simulation loop, tracing individual photon paths.
+7.  **Compute AOPs**: Processes the tallied photon data to calculate apparent optical properties.
+8.  **Free Up Allocated Memory**: Deallocates all dynamically allocated memory.
+
+### Photon Life Cycle: Initiation and Termination
+
+The core of the simulation is a loop where each iteration represents the entire life of a single photon. A new photon is initiated at the start of each iteration, and its path is traced until it is terminated.
+
+*   **Initiation**: A new photon's life begins inside the `INTENSITY_LOOP` in `mc.f90`. The `light` subroutine is called to define its initial properties (e.g., direction), which are determined by the sky radiance distribution. This can be a simple model with direct and diffuse components (`difcol.inp`) or a tabulated distribution from a file (`skydist.inp`). The photon is placed at the air-water interface.
+
+*   **Termination**: A photon's path ends, and the simulation for that photon ceases, when one of the following events occurs, as handled by the `water` subroutine in `water.f90`:
+    1.  It is **absorbed** within the water column. This is determined by comparing a random number to the single-scattering albedo.
+    2.  It scatters upward and passes back out through the **air-water interface**.
+    3.  It hits a **side boundary** of the model domain.
+    4.  It is **absorbed** by the **bottom boundary**.
+    
+Once a photon is terminated, the program begins the next iteration of the loop, initiating a new photon.
+
+### Photon Path Simulation
+
+#### The Air-Water Interface
+*   When the photon strikes the surface, **Fresnel's equations** are used with a random number to determine if it is reflected or transmitted into the water.
+*   If the photon is transmitted, **Snell's Law** is used to calculate its new, refracted angle of travel within the water.
+
+#### Path Length Determination
+*   The distance the photon travels between interactions is its optical path length. This step size, $\Delta l$, is determined probabilistically using the beam attenuation coefficient $c(\lambda)$ and a random number, $\xi_1$, uniformly distributed between 0 and 1:
+    $$ \Delta l = -\frac{\ln(\xi_1)}{c(\lambda)} $$
+
+#### Absorption or Scattering
+*   After traveling the distance $\Delta l$, the photon interacts with the medium. A decision is made to either absorb or scatter the photon.
+*   A new random number, $\xi_2$, is generated and compared to the single-scattering albedo, $\omega_0(\lambda)$.
+    *   If $\xi_2 \le \omega_0(\lambda)$, the photon is **scattered**.
+    *   If $\xi_2 > \omega_0(\lambda)$, the photon is **absorbed**, and its simulation is terminated.
+
+#### Scattering Process
+*   If the photon is scattered, its direction must change.
+    1.  **Select Constituent:** The model first determines which constituent particle scattered the photon. This is a random choice weighted by the relative scattering contribution of each constituent at that wavelength.
+    2.  **Select New Angle:** The model then uses the cumulative scattering phase function for that specific particle (from `spf.inp`) as a probability table. A new random number, $\xi_3$, is generated to select a new polar scattering angle, $\theta$. A uniformly distributed random number determines the azimuthal scattering angle, $\phi$.
+
+#### Boundary Interactions
+*   If a photon strikes the **bottom boundary**, a random number is compared to the bottom reflectance ($R_b$) from `lambbot.inp`.
+    *   If absorbed, the photon is terminated.
+    *   If reflected, another random number determines if the reflection is specular (mirror-like) or diffuse (Lambertian), and the photon's journey continues in an upward direction.
+
+### Photon Logging and AOP Calculation
+
+As photons travel through the simulated environment, their crossings of predefined horizontal layers are recorded. This information is used to calculate the Apparent Optical Properties (AOPs).
+
+#### Logging Photon Crossings
+*   The `logbin` subroutine (in `logbin.f90`) is called whenever a photon crosses a logging layer.
+*   `logbin` records the event by incrementing a counter in a large multi-dimensional array `n(lambda, i, j, k, t, p)`. This array acts as a histogram, binning photons by:
+    *   `lambda`: Wavelength.
+    *   `i, j`: Horizontal grid cell location.
+    *   `k`: Vertical layer index.
+    *   `t, p`: Bins for the polar ($\theta$) and azimuthal ($\phi$) angles of the photon's direction.
+
+#### Polar Angle (Theta) Binning
+The AOMC model supports two different methods for defining the polar angle bins, controlled by the `angint` parameter in `amc.inp`:
+
+1.  **Equal Angle Intervals (`angint = 1`):** The polar angle range [0, $\pi$] is divided into `alphaint` bins of equal angular width.
+2.  **Equal Cosine Intervals (`angint = 0`):** The cosine of the polar angle range [1, -1] is divided into `alphaint` equal intervals. This provides higher angular resolution near the horizontal plane ($\theta = \pi/2$) compared to the equal angle method.
+
+#### Conversion to AOPs
+*   After all photon simulations are complete, the `n` array contains the raw counts of photon crossings.
+*   In the final section of `mc.f90`, these counts are converted into physical quantities:
+    *   **Radiance ($L$):** The number of photons in each angular bin is normalized by the solid angle of that bin to calculate radiance.
+    $$ L = \frac{N_{photons}}{\Delta\Omega} $$
+    *   **Irradiance ($E_d, E_u$):** Planar irradiances are calculated by summing the radiance over the downward or upward hemisphere, respectively, and weighting by the cosine of the polar angle. Scalar irradiances ($E_{od}, E_{ou}$) are also computed by summing radiance over the hemispheres without the cosine weighting.
+
+This process transforms the statistical data from the Monte Carlo simulation into meaningful optical properties of the light field in the water.
+
+The following table summarizes the conversion of the tallied photons in the AOMC model to the final radiometric quantities:
+
+| Radiometric Quantity                      | Conventional Definition                                                              | Derivation from the AOMC model                                             |
+| ----------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| **Field Radiance ($$L$$)**                    | $$\frac{d^2\Phi}{dA \cos(\theta) d\omega}$$                                              | $$\frac{N(\theta,\phi)}{\sin(\theta)\cos(\theta)d\theta d\phi}$$               |
+| **Downwelling Planar Irradiance ($$E_d$$)**   | $$\int_0^{2\pi}\int_0^{\pi/2} L(\theta,\phi)\cos(\theta)\sin(\theta)d\theta d\phi$$      | $$\sum_0^{2\pi}\sum_0^{\pi/2} N(\theta,\phi)$$                               |
+| **Upwelling Planar Irradiance ($$E_u$$)**     | $$-\int_0^{2\pi}\int_{\pi/2}^{\pi} L(\theta,\phi)\cos(\theta)\sin(\theta)d\theta d\phi$$ | $$\sum_0^{2\pi}\sum_{\pi/2}^{\pi} N(\theta,\phi)$$                             |
+| **Downwelling Scalar Irradiance ($$E_od$$)**  | $$\int_0^{2\pi}\int_0^{\pi/2} L(\theta,\phi)\sin(\theta)d\theta d\phi$$                 | $$\sum_0^{2\pi}\sum_0^{\pi/2} \frac{N(\theta,\phi)}{\cos(\theta)}$$           |
+| **Upwelling Scalar Irradiance ($$E_ou$$)**    | $$\int_0^{2\pi}\int_{\pi/2}^{\pi} L(\theta,\phi)\sin(\theta)d\theta d\phi$$             | $$\sum_0^{2\pi}\sum_{\pi/2}^{\pi} \frac{N(\theta,\phi)}{\cos(\theta)}$$       |
+
+

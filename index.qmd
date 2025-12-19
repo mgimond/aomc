@@ -20,11 +20,17 @@ The model simulates radiometric quantities (as measured by radiometers)  such as
 *  Shape factors (as used in the two-flow or two-stream model)
 *  Surface Albedo 
 
-A detailed description of the underlying radiative transfer theory can be found in the [Model Theory document](input_docs/theory.qmd).
+A detailed description of the underlying radiative transfer theory can be found in the [Model Theory document](input_docs/theory.qmd) and the [Model Implementation document](input_docs/model_implementation.qmd).
 
 ## How do I compile the code?
 
 Compilation instructions can be found on the [Compilation](input_docs/compilation.qmd) page.
+
+## Running the model
+
+To run the `aomc` model, execute the compiled `aomc` executable from within a project folder that contains all the necessary input files. It is crucial to note that the input file names (e.g., `amc.inp`, `abs.inp`) are hard-coded into the model's source code. Therefore, these files must be present in the directory from which the model is executed.
+
+Careful attention must be paid to the format and content of these input files. Incorrect formatting or missing data will lead to errors. It is highly recommended to thoroughly read the [Input File Documentation](#input-file-documentation) to ensure proper setup.
 
 ## Input File Documentation
 
