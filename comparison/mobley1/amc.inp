@@ -1,11 +1,11 @@
-1)Iterations                                  : 150000000
+1)Iterations                                  : 500000000
 2)Light source from model(0) or file(1)       : 0
  a) direct azimuth angle(deg)                 : 10
  b) direct zenith angle(deg)                  : 60
 3)number of system constituents               : 1
 4)depth (M)                                   : 100.0
 5)side boundaries (M)                         : 10000.0
-6)Number of depth recording layers            : 41
+6)Number of depth recording layers            : 81
   a) Thickness of each recording layer        : 0.1
 7)# of alpha intervals to bin (MAX=180)       : 20
 8)# of phi intervals to bin (MAX=180)         : 24
