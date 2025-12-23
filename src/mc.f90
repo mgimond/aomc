@@ -1945,22 +1945,17 @@ PROGRAM mc
               DO kk = -1 , numlogly 
 !               polar_ld(lam,ii,jj,kk) = SUM( rad(lam,ii,jj,kk,1,:) ) / REAL(phiint)
 !				 polar_lu(lam,ii,jj,kk) = SUM( rad(lam,ii,jj,kk,alphaint,:) ) / REAL(phiint)
-          IF(angint == 1) THEN                                                     
-             polar_ld(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,1,:)) ) / ( 2 * pi * (1.0 - COS( nalpha )) )                                                           
-             polar_lu(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,alphaint,:)) ) / ( 2 * pi * (1.0 - COS( nalpha )) )                                                    
-                                                                                   
-!             rad( lam,ii,jj,kk,1,: ) = REAL( n(lam,ii,jj,kk,1,:) ) / ( nphi * (1.0 - COS( nalpha )) )                                                                  
-!             rad( lam,ii,jj,kk,alphaint,: ) = REAL( n(lam,ii,jj,kk,alphaint,:) ) / ( nphi * (1.0 - COS( nalpha )) )                                                    
-          ELSE                                                                     
-             ! For angint=0 (equal cosine), dmu = 2.0 / alphaint. Solid angle of the entire polar cap = 2 * PI * dmu.                 
-             polar_ld(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,1,:)) ) / (2.0 * PI * (2.0 / REAL(alphaint)))                                                        
-             polar_lu(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,alphaint,:)) ) / ( 2.0 * PI * (2.0 / REAL(alphaint)))                                                  
-                                                                                   
-             ! Solid angle of a single bin in the polar cap = dmu * dphi = (2/alphaint) * (2*PI/phiint)                                                        
- !            rad( lam,ii,jj,kk,1,: ) = REAL( n(lam,ii,jj,kk,1,:) ) / &             
- !                 ((2.0 / REAL(alphaint)) * (2.0 * PI / REAL(phiint)))             
- !            rad( lam,ii,jj,kk,alphaint,: ) = REAL( n(lam,ii,jj,kk,alphaint,:) ) / &                                                                                   
- !                 ((2.0 / REAL(alphaint)) * (2.0 * PI / REAL(phiint)))             
+          IF(angint == 1) THEN
+             ! For equal angle bins, the integrated projected solid angle for the polar cap (theta from 0 to nalpha)
+             ! is Integral[|cos(theta)| * dOmega] = PI * SIN(nalpha)**2
+             polar_ld(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,1,:)) ) / ( PI * SIN(nalpha)**2 )
+             polar_lu(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,alphaint,:)) ) / ( PI * SIN(nalpha)**2 )
+          ELSE
+             ! For equal cosine bins, dmu = 2.0 / alphaint.
+             ! The integrated projected solid angle for the polar cap is PI * (2*dmu - dmu**2)
+             dmu = 2.0 / REAL(alphaint)
+             polar_ld(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,1,:)) ) / ( PI * (2.0 * dmu - dmu**2) )
+             polar_lu(lam,ii,jj,kk) = REAL( SUM( n(lam,ii,jj,kk,alphaint,:)) ) / ( PI * (2.0 * dmu - dmu**2) )
           END IF  
               END DO
            END DO
