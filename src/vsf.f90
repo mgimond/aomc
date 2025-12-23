@@ -1,4 +1,4 @@
-!     Last change:  MG   20 Mar 2003    2:46 pm
+!     Last change:  MG   23 December 2025
 SUBROUTINE vsf(lam,thetascat,coptlayer)
 
   ! Purpose:
@@ -19,6 +19,9 @@ SUBROUTINE vsf(lam,thetascat,coptlayer)
   !     Date     Programmer           Description of change
   !     ====     ==========           =====================
   !  3/10/2003   Manuel Gimond        Original code 
+  !  12/23/2025  Manuel Gimond        Improved interpolation scheme, added power-law
+  !                                   cumulative distribution function for forward-most
+  !                                   angle
 
 
   USE rand_global
@@ -33,6 +36,7 @@ SUBROUTINE vsf(lam,thetascat,coptlayer)
   REAL,INTENT(OUT)    :: thetascat
   REAL :: random
   REAL :: dthetascat
+  REAL :: fraction
 
   thetascat = 0.0
   jj = 2
@@ -55,26 +59,30 @@ SUBROUTINE vsf(lam,thetascat,coptlayer)
 
      random = rand()
 
-     IF (random <= spf(1,ii) ) THEN
+     IF (random <= spf(1,ii) ) THEN ! The forward-most scattering direction
 
-        dthetascat = spf(1,0) 
-        thetascat = rand() * dthetascat
+!        dthetascat = spf(1,0) 
+!        thetascat = rand() * dthetascat  ! uniform interpolation
 
+        ! The following adopts Mobley et al.'s  power-law extrapolation (1993)
+        ! thetascat = spf(1,0) * (random / spf(1,ii))**(1.0 / (2.0 - 1.346))
+        thetascat = spf(1,0) * (random / spf(1,ii))**(1.529052)
+        
      ELSE
 
         ANGLE_LOOP: DO
 
            IF (random > spf(jj - 1, ii) .AND. random <= spf(jj,ii) ) THEN
 
-              thetascat = spf(jj,0) 
+              ! Discrete sampling technique (quickest, but least accurate)
+              ! thetascat = spf(jj,0)  
 
               ! A random value between 2 discrete SPF values can be generated.
               ! Uncomment the follwoing 2 lines if this option is desired
               !
-              !           dthetascat = spf(jj, 0) - spf(jj - 1, 0)
-              !           thetascat  = rand() * dthetascat + spf(jj - 1, 0)
-              !
-              ! End of option
+               fraction  = (random - spf(jj - 1, ii)) / (spf(jj, ii) - spf(jj - 1, ii))
+               thetascat = spf(jj - 1, 0) + fraction * (spf(jj, 0) - spf(jj - 1, 0))
+
 
               EXIT  ANGLE_LOOP
 
