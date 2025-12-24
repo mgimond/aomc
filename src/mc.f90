@@ -1,4 +1,4 @@
-!     Last change:  MG   19 Dec 2025    
+!     Last change:  MG   22 Dec 2025    
 PROGRAM mc
 
   ! Purpose:
@@ -23,6 +23,7 @@ PROGRAM mc
   !  12/05/2025  Manuel Gimond        Replaced custom RNG with intrinsic RNG in modules.f90
   !  12/07/2025  Manuel Gimond		  Change recording of output aop.out and rad.out
   !  12/19/2025  Manuel Gimond		  Changed radiance calculations, reformat aop.out precision
+  !  12/22/2025  Manule Gimond		  Fixed polar_lu and polar_ld calculations
   !
   ! License/Disclaimer
   ! ------------------
