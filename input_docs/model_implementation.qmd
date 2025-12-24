@@ -1,6 +1,6 @@
 ## The AOMC Model Implementation
 
-The AOMC model uses the **Monte Carlo method** to solve the RTE. This statistical approach simulates the individual life histories of a large number of photons. By tracking the fate of each photon, the model reconstructs the macroscopic light field (e.g., radiance and irradiance) throughout the water body.
+The AOMC model uses the **Monte Carlo method** to simulate the individual life histories of a large number of photons. By tracking the fate of each photon, the model reconstructs the light field (e.g., radiance and irradiance) throughout the water body.
 
 The simulation is driven by the main program `mc.f90`, which iterates through a predefined number of photons for each specified wavelength.
 
@@ -34,7 +34,7 @@ Once a photon is terminated, the program begins the next iteration of the loop, 
 ### Photon Path Simulation
 
 #### The Air-Water Interface
-*   When the photon strikes the surface, **Fresnel's equations** are used with a random number to determine if it is reflected or transmitted into the water.
+*   When the photon strikes the surface, **Fresnel's equation** is used with a random number to determine if it is reflected or transmitted into the water.
 *   If the photon is transmitted, **Snell's Law** is used to calculate its new, refracted angle of travel within the water.
 
 #### Path Length Determination
@@ -48,9 +48,13 @@ Once a photon is terminated, the program begins the next iteration of the loop, 
     *   If $\xi_2 > \omega_0(\lambda)$, the photon is **absorbed**, and its simulation is terminated.
 
 #### Scattering Process
-*   If the photon is scattered, its direction must change.
-    1.  **Select Constituent:** The model first determines which constituent particle scattered the photon. This is a random choice weighted by the relative scattering contribution of each constituent at that wavelength.
-    2.  **Select New Angle:** The model then uses the cumulative scattering phase function for that specific particle (from `spf.inp`) as a probability table. A new random number, $\xi_3$, is generated to select a new polar scattering angle, $\theta$. A uniformly distributed random number determines the azimuthal scattering angle, $\phi$.
+If the photon is scattered, its direction must change.
+
+1.  **Select Constituent:** The model first determines which constituent particle scattered the photon. This is a random choice weighted by the relative scattering contribution of each constituent at that wavelength.
+2.  **Select New Angle:** The model then uses the cumulative scattering phase function for that specific particle (from `spf.inp`) as a probability table. A new random number, $\xi_3$, is generated to select a new polar scattering angle, $\theta$. A uniformly distributed random number determines the azimuthal scattering angle, $\phi$.
+ 
+For a detailed review of the scattering phase function see [here](spf.qmd)   
+    
 
 #### Boundary Interactions
 *   If a photon strikes the **bottom boundary**, a random number is compared to the bottom reflectance ($R_b$) from `lambbot.inp`.
@@ -86,12 +90,13 @@ This process transforms the statistical data from the Monte Carlo simulation int
 
 The following table summarizes the conversion of the tallied photons in the AOMC model to the final radiometric quantities:
 
-| Radiometric Quantity                      | Conventional Definition                                                              | Derivation from the AOMC model                                             |
-| ----------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| **Field Radiance ($$L$$)**                    | $$\frac{d^2\Phi}{dA \cos(\theta) d\omega}$$                                              | $$\frac{N(\theta,\phi)}{\sin(\theta)\cos(\theta)d\theta d\phi}$$               |
-| **Downwelling Planar Irradiance ($$E_d$$)**   | $$\int_0^{2\pi}\int_0^{\pi/2} L(\theta,\phi)\cos(\theta)\sin(\theta)d\theta d\phi$$      | $$\sum_0^{2\pi}\sum_0^{\pi/2} N(\theta,\phi)$$                               |
-| **Upwelling Planar Irradiance ($$E_u$$)**     | $$-\int_0^{2\pi}\int_{\pi/2}^{\pi} L(\theta,\phi)\cos(\theta)\sin(\theta)d\theta d\phi$$ | $$\sum_0^{2\pi}\sum_{\pi/2}^{\pi} N(\theta,\phi)$$                             |
-| **Downwelling Scalar Irradiance ($$E_od$$)**  | $$\int_0^{2\pi}\int_0^{\pi/2} L(\theta,\phi)\sin(\theta)d\theta d\phi$$                 | $$\sum_0^{2\pi}\sum_0^{\pi/2} \frac{N(\theta,\phi)}{\cos(\theta)}$$           |
-| **Upwelling Scalar Irradiance ($$E_ou$$)**    | $$\int_0^{2\pi}\int_{\pi/2}^{\pi} L(\theta,\phi)\sin(\theta)d\theta d\phi$$             | $$\sum_0^{2\pi}\sum_{\pi/2}^{\pi} \frac{N(\theta,\phi)}{\cos(\theta)}$$       |
-
+| Radiometric Quantity                      | Conventional Definition                                                              | Derivation from the AOMC model                                                                 |
+| ----------------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| **Field Radiance, $$L$$**                    | $$\frac{d^2\Phi}{dA |\cos(\theta)| d\omega}$$                                            | $$\frac{N(\theta,\phi)}{|\cos(\theta)|\sin(\theta)d\theta d\phi}$$                                 |
+| **Downwelling Planar Irradiance $$E_d$$**   | $$\int_0^{2\pi}\int_0^{\pi/2} L(\theta,\phi)\cos(\theta)\sin(\theta)d\theta d\phi$$      | $$\sum_0^{2\pi}\sum_0^{\pi/2} N(\theta,\phi)$$                                                  |
+| **Upwelling Planar Irradiance, $$E_u$$**     | $$-\int_0^{2\pi}\int_{\pi/2}^{\pi} L(\theta,\phi)\cos(\theta)\sin(\theta)d\theta d\phi$$ | $$\sum_0^{2\pi}\sum_{\pi/2}^{\pi} N(\theta,\phi)$$                                                |
+| **Downwelling Scalar Irradiance, $$E_od$$**  | $$\int_0^{2\pi}\int_0^{\pi/2} L(\theta,\phi)\sin(\theta)d\theta d\phi$$                 | $$\sum_0^{2\pi}\sum_0^{\pi/2} \frac{N(\theta,\phi)}{|\cos(\theta)|}$$                             |
+| **Upwelling Scalar Irradiance, $$E_ou$$**    | $$\int_0^{2\pi}\int_{\pi/2}^{\pi} L(\theta,\phi)\sin(\theta)d\theta d\phi$$             | $$\sum_0^{2\pi}\sum_{\pi/2}^{\pi} \frac{N(\theta,\phi)}{|\cos(\theta)|}$$                             |
+| **Polar Radiance, $$L_d, L_u$$**          | $$\frac{d^2\Phi}{dA |\cos(\theta)| d\omega}, at\ \theta=0, \pi$$                           | $$\frac{\sum_{\phi=0}^{2\pi} N_{cap}(\phi)}{\int_0^{2\pi}\int_{cap} |\cos(\theta)|\sin(\theta)d\theta d\phi}$$ |
+: {.striped .sm}
 

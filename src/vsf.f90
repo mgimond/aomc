@@ -75,7 +75,7 @@ SUBROUTINE vsf(lam,thetascat,coptlayer)
            IF (random > spf(jj - 1, ii) .AND. random <= spf(jj,ii) ) THEN
 
               ! Discrete sampling technique (quickest, but least accurate)
-              ! thetascat = spf(jj,0)  
+!               thetascat = spf(jj,0)  
 
               ! A random value between 2 discrete SPF values can be generated.
               ! Uncomment the follwoing 2 lines if this option is desired

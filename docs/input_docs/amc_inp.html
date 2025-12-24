@@ -40,7 +40,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-4839b8e664a25a18845a253efecf13cb.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8675d7fdfc424feb08d1bc3935219611.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -134,6 +134,10 @@ window.Quarto = {
     <a class="nav-link" href="../input_docs/model_implementation.html"> 
 <span class="menu-text">Implementation</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../input_docs/compilation.html"> 
+<span class="menu-text">Compilation</span></a>
+  </li>  
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-input-files" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Input Files</span>
@@ -201,8 +205,8 @@ window.Quarto = {
     </ul>
   </li>
   <li class="nav-item">
-    <a class="nav-link" href="../input_docs/compilation.html"> 
-<span class="menu-text">Compilation</span></a>
+    <a class="nav-link" href="../input_docs/comparison.html"> 
+<span class="menu-text">Comparison</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -242,7 +246,7 @@ window.Quarto = {
 <p>This document describes the input parameters for the AOMC model, as defined in the <code>amc.inp</code> file. The <code>mc.f90</code> program reads this file, and is very specific about the data format and range of values for each parameter.</p>
 <p><strong>Important Note for Float Parameters:</strong> When providing input for parameters with a “Float” data type, you must include a decimal point, even if the value is a whole number (e.g., <code>100.0</code> instead of <code>100</code>).</p>
 <p>The following table details each parameter, its data type, valid range, and any additional notes or restrictions.</p>
-<table class="caption-top table">
+<table class="table-sm small caption-top table">
 <colgroup>
 <col style="width: 21%">
 <col style="width: 4%">
@@ -325,120 +329,114 @@ window.Quarto = {
 <td>Number of equal longitude bins for photon vector angle.</td>
 </tr>
 <tr class="even">
-<td>8a) Use polar cap as grid?(yes=1, no=0)</td>
-<td>Integer</td>
-<td><code>[0, 1]</code></td>
-<td>A value of 1 will create a single polar bin. A value of 0 will break down the polar cap into PHI number of bins.</td>
-</tr>
-<tr class="odd">
-<td>8b) Interval type (ang = 1,cos = 0)</td>
+<td>8a) Interval type (ang = 1,cos = 0)</td>
 <td>Integer</td>
 <td><code>[0, 1]</code></td>
 <td>Defines interval type.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>9) X,Y,Z for absorption (yes=1,no=0)</td>
 <td>Integer</td>
 <td><code>[0, 1]</code></td>
 <td>Log all instances of absorption within the water column. Only for single wavelength mode.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>10) BOT.-output(yes=1,no=0)</td>
 <td>Integer</td>
 <td><code>[0, 1]</code></td>
 <td>Log all instances of photons absorbed by the bottom boundary. Only for single wavelength mode.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>11) SIDE-output(yes=1,no=0)</td>
 <td>Integer</td>
 <td><code>[0, 1]</code></td>
 <td>Log all instances of photons absorbed by the side boundary. Only for single wavelength mode.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>12) SPF from file? (yes=1,no=0)</td>
 <td>Integer</td>
 <td><code>[0, 1]</code></td>
 <td>Determine if the cumulative SPF is to be read from a file (1) or randomly determined from an isotropic function (0).</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>12a) Number of angles</td>
 <td>Integer</td>
 <td><code>[0, 360]</code></td>
 <td>Number of scattering phase function angles to read in.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>13) # of concentration dependent layers</td>
 <td>Integer</td>
 <td><code>[1, 100]</code></td>
 <td>Number of layers with different optical characteristics.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>14) Number of cells in X-Y direction(0=NOGRID)</td>
 <td>Integer</td>
 <td><code>[0, 101]</code></td>
 <td>Number of rows and columns for grid output. If 0, no grid file is created. Must be an odd number.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>14a) Cell size (in unit meters)</td>
 <td>Float</td>
 <td><code>]0, inf[</code></td>
 <td>Size of each cell (same for dX and dY) in meters.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>14b) Output to Surfer format (yes=1,no=0)</td>
 <td>Integer</td>
 <td><code>[0, 1]</code></td>
 <td>If 1, output is in Surfer GRID ASCII format.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>15) Light source: point[1],circle[2],rect.[3]</td>
 <td>Integer</td>
 <td><code>[1, 2, 3]</code></td>
 <td>Type of light source.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>15a) If circle, define diameter</td>
 <td>Float</td>
 <td><code>]0, +inf[</code></td>
 <td>Diameter of the collimated light source if circular.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>15b) If rectangle, define dX</td>
 <td>Float</td>
 <td><code>]0, +inf[</code></td>
 <td>X dimension if rectangular light source.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>15c) and define dY</td>
 <td>Float</td>
 <td><code>]0, +inf[</code></td>
 <td>Y dimension if rectangular light source.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>16) Bottom target: NO[0],YES[1]</td>
 <td>Integer</td>
 <td><code>[0, 1]</code></td>
 <td>Specify a bottom target.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>16a) define dX</td>
 <td>Float</td>
 <td><code>]0, +inf[</code></td>
 <td>X dimension of the target.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>16b) define dY</td>
 <td>Float</td>
 <td><code>]0, +inf[</code></td>
 <td>Y dimension of the target.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>17) Normalize output to air(0) or water(1)</td>
 <td>Integer</td>
 <td><code>[0, 1]</code></td>
 <td>Normalize optical properties to incident radiation on water surface (0) or just below (1).</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>18) Number of wavebands (minimum = 1)</td>
 <td>Integer</td>
 <td><code>[1, 500]</code></td>

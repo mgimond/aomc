@@ -14,6 +14,8 @@ website:
         text: Theory
       - href: input_docs/model_implementation.qmd
         text: Implementation
+      - href: input_docs/compilation.qmd
+        text: Compilation
       - text: "Input Files"
         menu:
           - href: input_docs/amc_inp.qmd
@@ -44,8 +46,8 @@ website:
             text: "wave.out"
           - href: input_docs/grid_out.qmd
             text: "grid*.out"
-      - href: input_docs/compilation.qmd
-        text: Compilation
+      - href: input_docs/comparison.qmd
+        text: Comparison
     right:
       - icon: github
         href: https://github.com/mgimond/aomc

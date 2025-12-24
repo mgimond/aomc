@@ -40,7 +40,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-4839b8e664a25a18845a253efecf13cb.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-8675d7fdfc424feb08d1bc3935219611.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -134,6 +134,10 @@ window.Quarto = {
     <a class="nav-link active" href="../input_docs/model_implementation.html" aria-current="page"> 
 <span class="menu-text">Implementation</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../input_docs/compilation.html"> 
+<span class="menu-text">Compilation</span></a>
+  </li>  
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-input-files" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Input Files</span>
@@ -201,8 +205,8 @@ window.Quarto = {
     </ul>
   </li>
   <li class="nav-item">
-    <a class="nav-link" href="../input_docs/compilation.html"> 
-<span class="menu-text">Compilation</span></a>
+    <a class="nav-link" href="../input_docs/comparison.html"> 
+<span class="menu-text">Comparison</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -257,7 +261,7 @@ window.Quarto = {
 
 <section id="the-aomc-model-implementation" class="level2">
 <h2 class="anchored" data-anchor-id="the-aomc-model-implementation">The AOMC Model Implementation</h2>
-<p>The AOMC model uses the <strong>Monte Carlo method</strong> to solve the RTE. This statistical approach simulates the individual life histories of a large number of photons. By tracking the fate of each photon, the model reconstructs the macroscopic light field (e.g., radiance and irradiance) throughout the water body.</p>
+<p>The AOMC model uses the <strong>Monte Carlo method</strong> to simulate the individual life histories of a large number of photons. By tracking the fate of each photon, the model reconstructs the light field (e.g., radiance and irradiance) throughout the water body.</p>
 <p>The simulation is driven by the main program <code>mc.f90</code>, which iterates through a predefined number of photons for each specified wavelength.</p>
 <section id="main-program-mc.f90-structure" class="level3">
 <h3 class="anchored" data-anchor-id="main-program-mc.f90-structure">Main Program (<code>mc.f90</code>) Structure</h3>
@@ -293,7 +297,7 @@ window.Quarto = {
 <section id="the-air-water-interface" class="level4">
 <h4 class="anchored" data-anchor-id="the-air-water-interface">The Air-Water Interface</h4>
 <ul>
-<li>When the photon strikes the surface, <strong>Fresnel’s equations</strong> are used with a random number to determine if it is reflected or transmitted into the water.</li>
+<li>When the photon strikes the surface, <strong>Fresnel’s equation</strong> is used with a random number to determine if it is reflected or transmitted into the water.</li>
 <li>If the photon is transmitted, <strong>Snell’s Law</strong> is used to calculate its new, refracted angle of travel within the water.</li>
 </ul>
 </section>
@@ -316,13 +320,12 @@ window.Quarto = {
 </section>
 <section id="scattering-process" class="level4">
 <h4 class="anchored" data-anchor-id="scattering-process">Scattering Process</h4>
-<ul>
-<li>If the photon is scattered, its direction must change.
+<p>If the photon is scattered, its direction must change.</p>
 <ol type="1">
 <li><strong>Select Constituent:</strong> The model first determines which constituent particle scattered the photon. This is a random choice weighted by the relative scattering contribution of each constituent at that wavelength.</li>
 <li><strong>Select New Angle:</strong> The model then uses the cumulative scattering phase function for that specific particle (from <code>spf.inp</code>) as a probability table. A new random number, <span class="math inline">\(\xi_3\)</span>, is generated to select a new polar scattering angle, <span class="math inline">\(\theta\)</span>. A uniformly distributed random number determines the azimuthal scattering angle, <span class="math inline">\(\phi\)</span>.</li>
-</ol></li>
-</ul>
+</ol>
+<p>For a detailed review of the scattering phase function see <a href="../input_docs/spf.html">here</a></p>
 </section>
 <section id="boundary-interactions" class="level4">
 <h4 class="anchored" data-anchor-id="boundary-interactions">Boundary Interactions</h4>
@@ -371,11 +374,11 @@ window.Quarto = {
 </ul>
 <p>This process transforms the statistical data from the Monte Carlo simulation into meaningful optical properties of the light field in the water.</p>
 <p>The following table summarizes the conversion of the tallied photons in the AOMC model to the final radiometric quantities:</p>
-<table class="caption-top table">
+<table class="table-striped table-sm small caption-top table">
 <colgroup>
-<col style="width: 20%">
+<col style="width: 18%">
+<col style="width: 38%">
 <col style="width: 42%">
-<col style="width: 37%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -386,29 +389,34 @@ window.Quarto = {
 </thead>
 <tbody>
 <tr class="odd">
-<td><strong>Field Radiance (<span class="math display">\[L\]</span>)</strong></td>
-<td><span class="math display">\[\frac{d^2\Phi}{dA \cos(\theta) d\omega}\]</span></td>
-<td><span class="math display">\[\frac{N(\theta,\phi)}{\sin(\theta)\cos(\theta)d\theta d\phi}\]</span></td>
+<td><strong>Field Radiance, <span class="math display">\[L\]</span></strong></td>
+<td><span class="math display">\[\frac{d^2\Phi}{dA |\cos(\theta)| d\omega}\]</span></td>
+<td><span class="math display">\[\frac{N(\theta,\phi)}{|\cos(\theta)|\sin(\theta)d\theta d\phi}\]</span></td>
 </tr>
 <tr class="even">
-<td><strong>Downwelling Planar Irradiance (<span class="math display">\[E_d\]</span>)</strong></td>
+<td><strong>Downwelling Planar Irradiance <span class="math display">\[E_d\]</span></strong></td>
 <td><span class="math display">\[\int_0^{2\pi}\int_0^{\pi/2} L(\theta,\phi)\cos(\theta)\sin(\theta)d\theta d\phi\]</span></td>
 <td><span class="math display">\[\sum_0^{2\pi}\sum_0^{\pi/2} N(\theta,\phi)\]</span></td>
 </tr>
 <tr class="odd">
-<td><strong>Upwelling Planar Irradiance (<span class="math display">\[E_u\]</span>)</strong></td>
+<td><strong>Upwelling Planar Irradiance, <span class="math display">\[E_u\]</span></strong></td>
 <td><span class="math display">\[-\int_0^{2\pi}\int_{\pi/2}^{\pi} L(\theta,\phi)\cos(\theta)\sin(\theta)d\theta d\phi\]</span></td>
 <td><span class="math display">\[\sum_0^{2\pi}\sum_{\pi/2}^{\pi} N(\theta,\phi)\]</span></td>
 </tr>
 <tr class="even">
-<td><strong>Downwelling Scalar Irradiance (<span class="math display">\[E_od\]</span>)</strong></td>
+<td><strong>Downwelling Scalar Irradiance, <span class="math display">\[E_od\]</span></strong></td>
 <td><span class="math display">\[\int_0^{2\pi}\int_0^{\pi/2} L(\theta,\phi)\sin(\theta)d\theta d\phi\]</span></td>
-<td><span class="math display">\[\sum_0^{2\pi}\sum_0^{\pi/2} \frac{N(\theta,\phi)}{\cos(\theta)}\]</span></td>
+<td><span class="math display">\[\sum_0^{2\pi}\sum_0^{\pi/2} \frac{N(\theta,\phi)}{|\cos(\theta)|}\]</span></td>
 </tr>
 <tr class="odd">
-<td><strong>Upwelling Scalar Irradiance (<span class="math display">\[E_ou\]</span>)</strong></td>
+<td><strong>Upwelling Scalar Irradiance, <span class="math display">\[E_ou\]</span></strong></td>
 <td><span class="math display">\[\int_0^{2\pi}\int_{\pi/2}^{\pi} L(\theta,\phi)\sin(\theta)d\theta d\phi\]</span></td>
-<td><span class="math display">\[\sum_0^{2\pi}\sum_{\pi/2}^{\pi} \frac{N(\theta,\phi)}{\cos(\theta)}\]</span></td>
+<td><span class="math display">\[\sum_0^{2\pi}\sum_{\pi/2}^{\pi} \frac{N(\theta,\phi)}{|\cos(\theta)|}\]</span></td>
+</tr>
+<tr class="even">
+<td><strong>Polar Radiance, <span class="math display">\[L_d, L_u\]</span></strong></td>
+<td><span class="math display">\[\frac{d^2\Phi}{dA |\cos(\theta)| d\omega}, at\ \theta=0, \pi\]</span></td>
+<td><span class="math display">\[\frac{\sum_{\phi=0}^{2\pi} N_{cap}(\phi)}{\int_0^{2\pi}\int_{cap} |\cos(\theta)|\sin(\theta)d\theta d\phi}\]</span></td>
 </tr>
 </tbody>
 </table>

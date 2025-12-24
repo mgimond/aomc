@@ -13,7 +13,7 @@ pad_percent <- function(x, digits = 3) {
 
 
 # Problem 1
-aop <- make_long_aop("../mobley1/.")
+aop <- make_long_aop("../mobley1/")
 w0.2 <- aop %>% 
   filter(aop %in% c("Ed", "Eou", "Lu")) %>% 
   filter(wavelength %in% c(1)) %>% 
@@ -46,7 +46,7 @@ knitr::kable(table %>% filter(omega==0.2) %>% select(-omega))
 knitr::kable(table %>% filter(omega==0.9) %>% select(-omega))   
 
 # Problem 2
-aop <- make_long_aop("../mobley2_angle/")
+aop <- make_long_aop("../mobley2/")
 w0.2 <- aop %>% 
   filter(aop %in% c("Ed", "Eou", "Lu")) %>% 
   filter(wavelength %in% c(1)) %>% 
@@ -84,7 +84,7 @@ w0.2 <- aop %>%
   filter(aop %in% c("Ed", "Eou", "Lu")) %>% 
   filter(wavelength %in% c(1)) %>% 
   mutate(depth = round(depth,1)) %>% 
-  filter(depth%in% c(0.8, 4, 8)) 
+  filter(depth%in% c(0.8, 4)) 
 
 prob1 <- w0.2 %>% 
   mutate(omega = ifelse(wavelength == 1, 0.2, 0.9)) %>% 

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>conc_inp – AOMC Model Documentation</title>
+<title>spf – AOMC Model Documentation</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -231,10 +266,17 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#concentration-input-parameters-conc.inp" id="toc-concentration-input-parameters-conc.inp" class="nav-link active" data-scroll-target="#concentration-input-parameters-conc.inp">Concentration Input Parameters (<code>conc.inp</code>)</a>
+  <li><a href="#scattering-phase-function-input-spf.inp" id="toc-scattering-phase-function-input-spf.inp" class="nav-link active" data-scroll-target="#scattering-phase-function-input-spf.inp">Scattering Phase Function Input (<code>spf.inp</code>)</a>
   <ul>
+  <li><a href="#from-vsf-to-a-cumulative-distribution" id="toc-from-vsf-to-a-cumulative-distribution" class="nav-link" data-scroll-target="#from-vsf-to-a-cumulative-distribution">From VSF to a Cumulative Distribution</a></li>
+  <li><a href="#how-aomc-determines-the-scattering-angle" id="toc-how-aomc-determines-the-scattering-angle" class="nav-link" data-scroll-target="#how-aomc-determines-the-scattering-angle">How AOMC Determines the Scattering Angle</a>
+  <ul class="collapse">
+  <li><a href="#small-forward-angles-power-law-extrapolation" id="toc-small-forward-angles-power-law-extrapolation" class="nav-link" data-scroll-target="#small-forward-angles-power-law-extrapolation">1. Small Forward Angles (Power-Law Extrapolation)</a></li>
+  <li><a href="#other-angles-linear-interpolation" id="toc-other-angles-linear-interpolation" class="nav-link" data-scroll-target="#other-angles-linear-interpolation">2. Other Angles (Linear Interpolation)</a></li>
+  </ul></li>
   <li><a href="#file-format" id="toc-file-format" class="nav-link" data-scroll-target="#file-format">File Format</a></li>
   <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example">Example</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -245,39 +287,68 @@ window.Quarto = {
 
 
 
-<section id="concentration-input-parameters-conc.inp" class="level1">
-<h1>Concentration Input Parameters (<code>conc.inp</code>)</h1>
-<p>This document describes the format for the <code>conc.inp</code> file, which specifies the concentrations of various water quality constituents, the refractive index of the medium, and the top boundary depth for each defined layer in the AOMC model.</p>
-<p>The weight units (e.g., grams, milligrams, micrograms) used for constituent concentrations in <code>conc.inp</code> must precisely match the weight units specified for the specific absorption coefficients in <code>abs.inp</code> and specific scattering coefficients in <code>scat.inp</code>. For example, <span class="math inline">\(mg/m^3\)</span> or <span class="math inline">\(g/m^3\)</span>.</p>
+<section id="scattering-phase-function-input-spf.inp" class="level1">
+<h1>Scattering Phase Function Input (<code>spf.inp</code>)</h1>
+<p>This document describes the format and theoretical basis for the <code>spf.inp</code> file, which provides the angular scattering information for each water constituent. This data is fundamental to determining the new direction of a photon after a scattering event.</p>
+<section id="from-vsf-to-a-cumulative-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="from-vsf-to-a-cumulative-distribution">From VSF to a Cumulative Distribution</h2>
+<p>The way a medium scatters light is fundamentally described by two related properties. The scattering functions used in the canonical benchmark problems for aquatic optics models are often derived from the seminal experimental work of Petzold (1972).</p>
+<ol type="1">
+<li><p><strong>Volume Scattering Function (VSF), <span class="math inline">\(\beta(\psi)\)</span></strong>: This is the core inherent optical property that describes the intensity of light scattered from a volume element into a specific direction or angle, <span class="math inline">\(\psi\)</span>. It has units of m⁻¹ sr⁻¹.</p></li>
+<li><p><strong>Scattering Phase Function (SPF), <span class="math inline">\(\tilde{\beta}(\psi)\)</span></strong>: This is the VSF normalized by the total scattering coefficient, <code>b</code>. The SPF represents the <em>probability density function</em> of a photon being scattered into a particular angle <span class="math inline">\(\psi\)</span>. Its integral over all solid angles is 1. <span class="math display">\[ \tilde{\beta}(\psi) = \frac{\beta(\psi)}{b} \quad \text{where} \quad b = 2\pi \int_{0}^{\pi} \beta(\psi) \sin(\psi) d\psi \]</span></p></li>
+</ol>
+<p>For a Monte Carlo model, working with a probability density function (PDF) like the SPF is inefficient. It’s much faster to use the <strong>Cumulative Distribution Function (CDF)</strong>. The <code>spf.inp</code> file contains this pre-calculated CDF, which can be called the Cumulative Scattering Phase Function (CSPF). In his original work, Petzold referred to this as the “Probability Curve” or “Volume Scattering Distribution Function”.</p>
+<p>The <strong>CSPF</strong> gives the probability that a photon will be scattered into an angle <em>less than or equal to</em> <span class="math inline">\(\psi\)</span>. It is created by integrating the SPF from 0 up to the angle <span class="math inline">\(\psi\)</span>. A value of <code>CSPF(π) = 1.0</code> means there is a 100% probability of being scattered to an angle somewhere between 0 and 180 degrees.</p>
+<p>To determine a new scattering angle, the model uses a technique called <strong>inverse transform sampling</strong>: 1. A random number, <span class="math inline">\(\xi\)</span>, is generated, uniformly distributed between 0 and 1. 2. The model then inverts the CSPF to find the angle <span class="math inline">\(\psi\)</span> that corresponds to this cumulative probability: <code>ψ = CSPF⁻¹(ξ)</code>.</p>
+</section>
+<section id="how-aomc-determines-the-scattering-angle" class="level2">
+<h2 class="anchored" data-anchor-id="how-aomc-determines-the-scattering-angle">How AOMC Determines the Scattering Angle</h2>
+<p>The <code>vsf.f90</code> subroutine implements the inverse transform sampling described above. It uses two different techniques, following the recommendations of Mobley et al.&nbsp;(1993), to provide high accuracy across all scattering angles.</p>
+<section id="small-forward-angles-power-law-extrapolation" class="level4">
+<h4 class="anchored" data-anchor-id="small-forward-angles-power-law-extrapolation">1. Small Forward Angles (Power-Law Extrapolation)</h4>
+<p>For the first angular bin in the <code>spf.inp</code> file, which covers the critical small forward-scattering angles, the model uses a <strong>power-law extrapolation</strong>. This approach is justified because, as noted by Petzold (1972) in his original VSF measurements, the scattering function at very small angles behaves like a power-law (<code>σ(θ) = Cθ^m</code>). This method accurately reproduces the strong, physically-correct forward-scattering peak. The new angle <code>thetascat</code> is calculated as:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode fortran code-with-copy"><code class="sourceCode fortranfixed"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>thetascat <span class="kw">=</span> spf(<span class="dv">1</span>,<span class="dv">0</span>) <span class="kw">*</span> (random <span class="kw">/</span> spf(<span class="dv">1</span>,ii))<span class="kw">**</span>(<span class="fl">1.529052</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This formula inverts the cumulative distribution of a <code>ψ^-1.346</code> power law, providing a highly realistic distribution of scattering angles very close to zero.</p>
+</section>
+<section id="other-angles-linear-interpolation" class="level4">
+<h4 class="anchored" data-anchor-id="other-angles-linear-interpolation">2. Other Angles (Linear Interpolation)</h4>
+<p>For all other angular bins, the model uses <strong>linear interpolation</strong>. After finding which two points in the CSPF table the random number falls between, it calculates the precise angle corresponding to that random number’s proportional distance between the two points.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode fortran code-with-copy"><code class="sourceCode fortranfixed"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">fraction</span>  <span class="kw">=</span> (random <span class="kw">-</span> spf(jj <span class="kw">-</span> <span class="dv">1</span>, ii)) <span class="kw">/</span> (spf(jj, ii) <span class="kw">-</span> spf(jj <span class="kw">-</span> <span class="dv">1</span>, ii))</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>thetascat <span class="kw">=</span> spf(jj <span class="kw">-</span> <span class="dv">1</span>, <span class="dv">0</span>) <span class="kw">+</span> <span class="bu">fraction</span> <span class="kw">*</span> (spf(jj, <span class="dv">0</span>) <span class="kw">-</span> spf(jj <span class="kw">-</span> <span class="dv">1</span>, <span class="dv">0</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This ensures a continuous and accurate selection of scattering angles across the rest of the phase function.</p>
+</section>
+</section>
 <section id="file-format" class="level2">
 <h2 class="anchored" data-anchor-id="file-format">File Format</h2>
-<p>The structure of the <code>conc.inp</code> file is strict and must conform to the following rules for the model to parse it correctly:</p>
+<p>The structure of the <code>spf.inp</code> file is as follows:</p>
 <ol type="1">
-<li><p><strong>Number of Layers</strong>: The very first value in the file must be an integer representing the total number of concentration-dependent layers. This number <strong>must</strong> match the value specified for parameter <code>13) # of concentration dependent layers</code> in the <code>amc.inp</code> file.</p></li>
-<li><p><strong>Layer Data</strong>: Following the number of layers, the file must contain one line of data for each layer. Each line comprises a series of floating-point values:</p>
+<li><p><strong>Number of Angles</strong>: The very first value must be an integer representing the number of angles in the phase function table. This number <strong>must</strong> match the value for parameter <code>12a) Number of angles</code> in <code>amc.inp</code>.</p></li>
+<li><p><strong>Cumulative SPF Table</strong>: Following the first line, the file must contain one line for each angle. Each line is read in free-format (space- or comma-separated) and contains <code>N+1</code> values, where <code>N</code> is the number of constituents (from <code>amc.inp</code> parameter 3):</p>
 <ul>
-<li><strong>Concentrations</strong>: A series of values representing the concentrations of each system constituent. The number of concentration values on each line <strong>must</strong> match the value specified for parameter <code>3) number of system constituents</code> in the <code>amc.inp</code> file.</li>
-<li><strong>Refractive Index</strong>: Immediately following the constituent concentrations, a single value representing the refractive index of the medium for that layer.</li>
-<li><strong>Top Boundary Depth</strong>: Finally, a single value representing the depth of the top boundary of that layer.</li>
-</ul>
-<p><strong>Data Format</strong>: The numerical values are read in free-format (list-directed). This means the numbers should be separated by spaces or commas. They do not need to be aligned in fixed columns, as long as each line contains the correct total number of values (<code>[number of constituents] + 2</code>).</p></li>
-<li><p><strong>Additional Information</strong>: Any text or data placed after the layer data lines is ignored by the model. This space can be used for comments, notes, or metadata, as shown in the example below.</p></li>
+<li><strong>Column 1</strong>: The scattering angle in <strong>radians</strong>.</li>
+<li><strong>Column 2 to N+1</strong>: The cumulative scattering probability for each constituent, from 0.0 to 1.0. Each column corresponds to a constituent in the same order they are defined elsewhere in the model.</li>
+</ul></li>
 </ol>
 </section>
 <section id="example" class="level2">
 <h2 class="anchored" data-anchor-id="example">Example</h2>
-<p>Here is a sample <code>conc.inp</code> file configured for <strong>2 layers</strong> and <strong>3 system constituents</strong>.</p>
-<pre><code>2
-1.0 0.05 0.01 1.340 0.0
-0.8 0.10 0.02 1.340 1.0
+<p>Here is a sample <code>spf.inp</code> file configured for <strong>5 angles</strong> and <strong>2 system constituents</strong>.</p>
+<pre><code>5
+0.000   0.000   0.000
+0.785   0.600   0.500
+1.571   0.800   0.750
+2.356   0.950   0.900
+3.142   1.000   1.000
 
 --- NOTES ---
-This NOTES section is not read by the AOMC model.
-Each line of data (after the first line) represents a layer.
-For each layer, the values are:
-[Conc. Constituent 1] [Conc. Constituent 2] [Conc. Constituent 3] [Refractive Index] [Top Boundary Depth]
-
-Depths are in meters.</code></pre>
+This section is not read by the AOMC model.
+Format: [Angle in Radians] [Constituent 1 Cum. SPF] [Constituent 2 Cum. SPF]</code></pre>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li>Petzold, T. J. (1972). <em>Volume Scattering Functions for Selected Ocean Waters</em> (SIO Ref. 72-78). Scripps Institution of Oceanography, Visibility Lab.</li>
+</ul>
 
 
 

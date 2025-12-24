@@ -1,0 +1,70 @@
+# Scattering Phase Function Input (`spf.inp`)
+
+This document describes the format and theoretical basis for the `spf.inp` file, which provides the angular scattering information for each water constituent. This data is fundamental to determining the new direction of a photon after a scattering event.
+
+## From VSF to a Cumulative Distribution
+
+The way a medium scatters light is fundamentally described by two related properties. The scattering functions used in the canonical benchmark problems for aquatic optics models are often derived from the seminal experimental work of Petzold (1972).
+
+1.  **Volume Scattering Function (VSF), $\beta(\psi)$**: This is the core inherent optical property that describes the intensity of light scattered from a volume element into a specific direction or angle, $\psi$. It has units of m⁻¹ sr⁻¹.
+
+2.  **Scattering Phase Function (SPF), $\tilde{\beta}(\psi)$**: This is the VSF normalized by the total scattering coefficient, `b`. The SPF represents the *probability density function* of a photon being scattered into a particular angle $\psi$. Its integral over all solid angles is 1.
+    $$ \tilde{\beta}(\psi) = \frac{\beta(\psi)}{b} \quad \text{where} \quad b = 2\pi \int_{0}^{\pi} \beta(\psi) \sin(\psi) d\psi $$
+
+For a Monte Carlo model, working with a probability density function (PDF) like the SPF is inefficient. It's much faster to use the **Cumulative Distribution Function (CDF)**. The `spf.inp` file contains this pre-calculated CDF, which can be called the Cumulative Scattering Phase Function (CSPF). In his original work, Petzold referred to this as the "Probability Curve" or "Volume Scattering Distribution Function".
+
+The **CSPF** gives the probability that a photon will be scattered into an angle *less than or equal to* $\psi$. It is created by integrating the SPF from 0 up to the angle $\psi$. A value of `CSPF(π) = 1.0` means there is a 100% probability of being scattered to an angle somewhere between 0 and 180 degrees.
+
+To determine a new scattering angle, the model uses a technique called **inverse transform sampling**:
+1. A random number, $\xi$, is generated, uniformly distributed between 0 and 1.
+2. The model then inverts the CSPF to find the angle $\psi$ that corresponds to this cumulative probability: `ψ = CSPF⁻¹(ξ)`.
+
+## How AOMC Determines the Scattering Angle
+
+The `vsf.f90` subroutine implements the inverse transform sampling described above. It uses two different techniques, following the recommendations of Mobley et al. (1993), to provide high accuracy across all scattering angles.
+
+#### 1. Small Forward Angles (Power-Law Extrapolation)
+For the first angular bin in the `spf.inp` file, which covers the critical small forward-scattering angles, the model uses a **power-law extrapolation**. This approach is justified because, as noted by Petzold (1972) in his original VSF measurements, the scattering function at very small angles behaves like a power-law (`σ(θ) = Cθ^m`). This method accurately reproduces the strong, physically-correct forward-scattering peak. The new angle `thetascat` is calculated as:
+```fortran
+thetascat = spf(1,0) * (random / spf(1,ii))**(1.529052)
+```
+This formula inverts the cumulative distribution of a `ψ^-1.346` power law, providing a highly realistic distribution of scattering angles very close to zero.
+
+#### 2. Other Angles (Linear Interpolation)
+For all other angular bins, the model uses **linear interpolation**. After finding which two points in the CSPF table the random number falls between, it calculates the precise angle corresponding to that random number's proportional distance between the two points.
+```fortran
+fraction  = (random - spf(jj - 1, ii)) / (spf(jj, ii) - spf(jj - 1, ii))
+thetascat = spf(jj - 1, 0) + fraction * (spf(jj, 0) - spf(jj - 1, 0))
+```
+This ensures a continuous and accurate selection of scattering angles across the rest of the phase function.
+
+## File Format
+
+The structure of the `spf.inp` file is as follows:
+
+1.  **Number of Angles**: The very first value must be an integer representing the number of angles in the phase function table. This number **must** match the value for parameter `12a) Number of angles` in `amc.inp`.
+
+2.  **Cumulative SPF Table**: Following the first line, the file must contain one line for each angle. Each line is read in free-format (space- or comma-separated) and contains `N+1` values, where `N` is the number of constituents (from `amc.inp` parameter 3):
+    *   **Column 1**: The scattering angle in **radians**.
+    *   **Column 2 to N+1**: The cumulative scattering probability for each constituent, from 0.0 to 1.0. Each column corresponds to a constituent in the same order they are defined elsewhere in the model.
+
+## Example
+
+Here is a sample `spf.inp` file configured for **5 angles** and **2 system constituents**.
+
+```
+5
+0.000   0.000   0.000
+0.785   0.600   0.500
+1.571   0.800   0.750
+2.356   0.950   0.900
+3.142   1.000   1.000
+
+--- NOTES ---
+This section is not read by the AOMC model.
+Format: [Angle in Radians] [Constituent 1 Cum. SPF] [Constituent 2 Cum. SPF]
+```
+
+## References
++ Petzold, T. J. (1972). *Volume Scattering Functions for Selected Ocean Waters* (SIO Ref. 72-78). Scripps Institution of Oceanography, Visibility Lab.
+

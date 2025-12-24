@@ -2,7 +2,7 @@ library(tidyverse)
 source("make_long_rad.R")
 # Figure 8 comparison
 #aomc <- read_csv("prob2_aomc_rad.csv")  # This is the rad formatted df from make_long_rad
-aomc <- make_long_rad("../mobley2")
+aomc <- make_long_rad("../mobley2/")
 mobley <- read_csv("mobley_fig8.csv")
 
 # Tau = 0 (Depth = 0)
@@ -14,7 +14,8 @@ fig8_aomc_tau0 <- aomc %>% filter(depth == 0,
 
 fig8_mobley_tau0 <- mobley %>% filter(tau == 0)
 
-ggplot(fig8_aomc_tau0, aes(x=alpha, y = radiance, lty = "AOMC")) + geom_line() +
+ggplot(fig8_aomc_tau0, aes(x=alpha, y = radiance, lty = "AOMC")) + 
+  geom_line() +
   geom_line(data = fig8_mobley_tau0, aes(x=alpha, y = radiance, lty="Mobley"),
             col = "grey30") +
   scale_y_log10(
