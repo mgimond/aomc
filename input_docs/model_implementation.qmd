@@ -88,7 +88,7 @@ The AOMC model supports two different methods for defining the polar angle bins,
 
 This process transforms the statistical data from the Monte Carlo simulation into meaningful optical properties of the light field in the water.
 
-The following table summarizes the conversion of the tallied photons in the AOMC model to the final radiometric quantities:
+The following table summarizes the conversion of the tallied photons in the AOMC model to the final radiometric quantities. $N(\theta,\phi)$ represents the number of photon crossings, across a horizontal plane, tallied within the angular bin corresponding to polar angle $\theta$ and azimuth angle $\phi$.
 
 | Radiometric Quantity                      | Conventional Definition                                                              | Derivation from the AOMC model                                                                 |
 | ----------------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
@@ -99,4 +99,10 @@ The following table summarizes the conversion of the tallied photons in the AOMC
 | **Upwelling Scalar Irradiance, $$E_ou$$**    | $$\int_0^{2\pi}\int_{\pi/2}^{\pi} L(\theta,\phi)\sin(\theta)d\theta d\phi$$             | $$\sum_0^{2\pi}\sum_{\pi/2}^{\pi} \frac{N(\theta,\phi)}{|\cos(\theta)|}$$                             |
 | **Polar Radiance, $$L_d, L_u$$**          | $$\frac{d^2\Phi}{dA |\cos(\theta)| d\omega}, at\ \theta=0, \pi$$                           | $$\frac{\sum_{\phi=0}^{2\pi} N_{cap}(\phi)}{\int_0^{2\pi}\int_{cap} |\cos(\theta)|\sin(\theta)d\theta d\phi}$$ |
 : {.striped .sm}
+
+### The Implicit Cosine Correction in Photon Tallies
+
+It may seem counter-intuitive that the final calculation for planar irradiance ($E_d$ and $E_u$) is a direct sum of the tallied photon counts $N(\theta, \phi)$, while the physical definition of irradiance explicitly includes a cosine factor. This is not an oversight, but a fundamental and elegant property of how photon transport is modeled across horizontal layers in a Monte Carlo simulation. The key is to recognize that the probability of a photon successfully crossing a horizontal detection plane is naturally proportional to the cosine of its zenith angle. An obliquely-traveling photon has a longer path to travel to cross a given vertical distance compared to a photon traveling straight down. Because it travels farther through the water, it has a higher chance of being absorbed or scattered away before it can be tallied.
+
+This "survival probability" acts as an inherent, or implicit, cosine weighting on the photon population that reaches the detector. The act of simply summing the weights of the photons that successfully cross the plane has already accounted for the $\cos(\theta)$ factor required for planar irradiance. This is also why the scalar irradiance calculation, which sums energy from all directions without a cosine weighting, must computationally *remove* this implicit factor by dividing the tallied counts $N(\theta, \phi)$ by $|\cos(\theta)|$.
 

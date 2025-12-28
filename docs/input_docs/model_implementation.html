@@ -249,6 +249,7 @@ window.Quarto = {
   <li><a href="#polar-angle-theta-binning" id="toc-polar-angle-theta-binning" class="nav-link" data-scroll-target="#polar-angle-theta-binning">Polar Angle (Theta) Binning</a></li>
   <li><a href="#conversion-to-aops" id="toc-conversion-to-aops" class="nav-link" data-scroll-target="#conversion-to-aops">Conversion to AOPs</a></li>
   </ul></li>
+  <li><a href="#the-implicit-cosine-correction-in-photon-tallies" id="toc-the-implicit-cosine-correction-in-photon-tallies" class="nav-link" data-scroll-target="#the-implicit-cosine-correction-in-photon-tallies">The Implicit Cosine Correction in Photon Tallies</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -373,7 +374,7 @@ window.Quarto = {
 </ul></li>
 </ul>
 <p>This process transforms the statistical data from the Monte Carlo simulation into meaningful optical properties of the light field in the water.</p>
-<p>The following table summarizes the conversion of the tallied photons in the AOMC model to the final radiometric quantities:</p>
+<p>The following table summarizes the conversion of the tallied photons in the AOMC model to the final radiometric quantities. <span class="math inline">\(N(\theta,\phi)\)</span> represents the number of photon crossings, across a horizontal plane, tallied within the angular bin corresponding to polar angle <span class="math inline">\(\theta\)</span> and azimuth angle <span class="math inline">\(\phi\)</span>.</p>
 <table class="table-striped table-sm small caption-top table">
 <colgroup>
 <col style="width: 18%">
@@ -420,10 +421,15 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-
-
-
 </section>
+</section>
+<section id="the-implicit-cosine-correction-in-photon-tallies" class="level3">
+<h3 class="anchored" data-anchor-id="the-implicit-cosine-correction-in-photon-tallies">The Implicit Cosine Correction in Photon Tallies</h3>
+<p>It may seem counter-intuitive that the final calculation for planar irradiance (<span class="math inline">\(E_d\)</span> and <span class="math inline">\(E_u\)</span>) is a direct sum of the tallied photon counts <span class="math inline">\(N(\theta, \phi)\)</span>, while the physical definition of irradiance explicitly includes a cosine factor. This is not an oversight, but a fundamental and elegant property of how photon transport is modeled across horizontal layers in a Monte Carlo simulation. The key is to recognize that the probability of a photon successfully crossing a horizontal detection plane is naturally proportional to the cosine of its zenith angle. An obliquely-traveling photon has a longer path to travel to cross a given vertical distance compared to a photon traveling straight down. Because it travels farther through the water, it has a higher chance of being absorbed or scattered away before it can be tallied.</p>
+<p>This “survival probability” acts as an inherent, or implicit, cosine weighting on the photon population that reaches the detector. The act of simply summing the weights of the photons that successfully cross the plane has already accounted for the <span class="math inline">\(\cos(\theta)\)</span> factor required for planar irradiance. This is also why the scalar irradiance calculation, which sums energy from all directions without a cosine weighting, must computationally <em>remove</em> this implicit factor by dividing the tallied counts <span class="math inline">\(N(\theta, \phi)\)</span> by <span class="math inline">\(|\cos(\theta)|\)</span>.</p>
+
+
+
 </section>
 </section>
 
