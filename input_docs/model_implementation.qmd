@@ -106,3 +106,18 @@ It may seem counter-intuitive that the final calculation for planar irradiance (
 
 This "survival probability" acts as an inherent, or implicit, cosine weighting on the photon population that reaches the detector. The act of simply summing the weights of the photons that successfully cross the plane has already accounted for the $\cos(\theta)$ factor required for planar irradiance. This is also why the scalar irradiance calculation, which sums energy from all directions without a cosine weighting, must computationally *remove* this implicit factor by dividing the tallied counts $N(\theta, \phi)$ by $|\cos(\theta)|$.
 
+### Why AOMC Uses a $1/cos(\theta)$ Weighting for Incident Photons
+
+When photons are launched toward the water surface in the model, each photon represents a small parcel of radiant energy. However, photons arriving at different zenith angles do not bring the same amount of energy per unit horizontal area. A nadir photon ($\theta=0^\circ$) delivers its energy directly onto the surface, while an oblique photon ($\theta=80^\circ$) spreads the same energy across an area that is $1/cos(\theta)$ times larger. Physically, this means that steep‑angle photons contribute far less downward irradiance than near‑vertical ones.
+
+Below the water surface this geometric effect is automatically handled by the model: only photons whose paths intersect a horizontal plane are counted, and the probability of crossing that plane already carries the appropriate $cos(\theta)$ dependence. At the surface, however, photons are forced to arrive at some ($x,y$) location regardless of angle, so this natural geometric filtering does not occur. Consequently, the model must explicitly impose the projection factor that relates radiance to irradiance.
+
+The model does this by  accumulating a normalization factor
+
+$$
+cositer(\lambda) = \sum{1/cos(\theta)} 
+$$
+
+taken over all photons incident on the surface. Although this looks like it "upweights" low incidence photons, it actually appears in the **denominator** of the final planar and scalar irradiance calculations. Thus, when many photons arrive at steep angles (large $1/cos(\theta)$), the normalization constant **increases** and the computed irradiances **decrease** correctly reflecting the fact that oblique light delivers **less energy** into the water column.
+
+In short, the $1/cos(\theta)$ weighting ensures that the model faithfully reconstructs the physically correct irradiance at the water surface. Without this correction, every incoming photon would carry identical weight, and the model would be unable to distinguish between strong near‑vertical illumination and weak grazing illumination leading to significant errors in computed underwater irradiances.
