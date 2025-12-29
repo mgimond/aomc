@@ -1,4 +1,4 @@
-!     Last change:  MG   22 Dec 2025    
+!     Last change:  MG   29 Dec 2025    
 PROGRAM mc
 
   ! Purpose:
@@ -23,7 +23,8 @@ PROGRAM mc
   !  12/05/2025  Manuel Gimond        Replaced custom RNG with intrinsic RNG in modules.f90
   !  12/07/2025  Manuel Gimond		  Change recording of output aop.out and rad.out
   !  12/19/2025  Manuel Gimond		  Changed radiance calculations, reformat aop.out precision
-  !  12/22/2025  Manule Gimond		  Fixed polar_lu and polar_ld calculations
+  !  12/22/2025  Manuel Gimond		  Fixed polar_lu and polar_ld calculations
+  !  12/29/2025  Manuel Gimond        Added protection against floating point roundoff in theta (light subroutine)
   !
   ! License/Disclaimer
   ! ------------------
@@ -146,7 +147,7 @@ PROGRAM mc
        '       Aquatic Optics Monte Carlo Model            ',&
        '       A       O      M     C                      ',&
        '                                                   ',&
-       '       Version 1.2.1                                 ',&
+       '       Version 1.2.2                                 ',&
        '                                                   ',&
        '       Original Author: Manuel Gimond              ',&
        '==================================================='
@@ -1472,8 +1473,7 @@ PROGRAM mc
            CALL logbin(x(1),y(1),-1,lam)
 
            ! Log information about incident photon (used for normalizing to above water irradiance)
-
-           cositer(lam) = cositer(lam) + 1 / COS( theta )
+           cositer(lam) = cositer(lam) + 1 / COS( theta ) 
 
            ! Determine outcome of air water interface
 
@@ -1991,7 +1991,7 @@ PROGRAM mc
         ELSE
 
            norma(lam) = cositer(lam)
-
+        
         END IF
 
         ! Normalize Irradiance
@@ -2478,7 +2478,7 @@ PROGRAM mc
            erro = .TRUE.
 
         END SELECT
-
+        CLOSE(14)
      END IF
 
      ! ------------------------------------------------------------

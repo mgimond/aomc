@@ -1,4 +1,4 @@
-!     Last change:  MG   26 Mar 2003   10:55 am
+!     Last change:  MG   29 December, 2025
 SUBROUTINE light(wavenum,wavel,iteration,control)
 
   ! Purpose:
@@ -17,6 +17,7 @@ SUBROUTINE light(wavenum,wavel,iteration,control)
   !     Date     Programmer           Description of change
   !     ====     ==========           =====================
   !   3/30/2003  Manuel Gimond        Original code
+  !  12/29/2025  Manuel Gimond       Added protection against floating point roundoff in theta
 
   USE rand_global
   USE randmod
@@ -58,7 +59,7 @@ SUBROUTINE light(wavenum,wavel,iteration,control)
 
         phi   = rand() * 2 * PI
         theta = PI / 2 - ASIN( rand() )  
-
+        IF (theta > PI/2.0)   theta = 1.5707  ! Protect against floating‑point roundoff 
      END IF
 
   CASE (1)  ! photon direction is read from file
