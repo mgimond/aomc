@@ -137,7 +137,7 @@ PROGRAM mc
   REAL      :: sr          !Solid angle
   REAL      :: R_aop, mu_up_aop, mu_down_aop, mu_aop, rd_aop, rup_aop, pld_aop, plu_aop
   REAL      :: ed_sum_aop, eu_sum_aop, eou_sum_aop, eod_sum_aop, efwd_plus_eback_aop
-  REAL      :: R_val, Lu_val, Lua_val, ed_sum_0, norma_val
+  REAL      :: R_val, Lu_val, Lua_val, ed_sum_0, norma_val, cositer_max, einc_rel_norm
   REAL, ALLOCATABLE, DIMENSION(:) :: rad_vals_row
 
 
@@ -2436,20 +2436,23 @@ PROGRAM mc
 
      IF (lambda > 1) THEN
 
+        cositer_max =  MAXVAL(cositer(1:lambda))
+   
         OPEN(14,iostat=ios,FILE='wave.out',status = 'unknown')
 
         SELECT CASE(ios)
 
         CASE(0)
 
-           WRITE(14,'(7(A12,2x))')'wavelength',' Eu ', ' Ed ', ' R ', &
-                ' Lu ',' Ed(a) ', ' Lu(a) '
+           WRITE(14,'(8(A12,2x))')'wavelength',' Eu ', ' Ed ', ' R ', &
+                ' Lu ',' Ed(a) ', ' Lu(a) ', 'Einc_max'
 
            DO lam = 1, lambda
               
               ed_sum_0 = SUM(ed(lam,:,:,0))
               norma_val = norma(lam)
-
+              einc_rel_norm =  cositer(lam)/ MAX(1.0, cositer_max)
+			  
               IF (ed_sum_0 > 0.0) THEN
                  R_val = SUM(eu(lam,:,:,0)) / ed_sum_0
               ELSE
@@ -2464,12 +2467,13 @@ PROGRAM mc
                  Lua_val = 0.0
               END IF
               
-              WRITE(14,'(F12.6, 6(2X,F13.7))') wavelength(lam), &
+              WRITE(14,'(F12.6, 7(2X,F13.7))') wavelength(lam), &
                    SUM( eu(lam,:,:,0)), ed_sum_0,      &
                    R_val,       &
                    Lu_val,  &
                    SUM( ed(lam,:,:,-1)),                         &
-                   Lua_val
+                   Lua_val,                                      &
+                   einc_rel_norm
            END DO
 
         CASE DEFAULT

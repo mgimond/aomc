@@ -226,8 +226,14 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#using-einc_max-to-obtain-relative-wm-2-or-wm-2nm-1" id="toc-using-einc_max-to-obtain-relative-wm-2-or-wm-2nm-1" class="nav-link active" data-scroll-target="#using-einc_max-to-obtain-relative-wm-2-or-wm-2nm-1">Using <code>Einc_max</code> to Obtain Relative Wm<sup>-2</sup> (or Wm<sup>-2</sup>nm<sup>-1</sup>)</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -252,19 +258,26 @@ window.Quarto = {
 
 
 <p>The <code>wave.out</code> file summarizes key optical properties at the surface for each simulated wavelength, making it particularly useful for remote sensing applications.</p>
+<p>All AOP arrays (eu, ed, polar_lu, etc.) are normalized upstream by <code>norma(lam)</code>. When normalized to below‑water downwelling at the interface, <code>norma(lam)</code> = <code>sum(ed(lam, :, :, k=0)</code>. When normalized to above‑water incidence, <code>norma(lam)</code> = <code>cositer(lam)</code>.</p>
 <p>The file contains the following columns:</p>
 <ul>
-<li><code>wavelength</code>: The wavelength of light in nanometers.</li>
-<li><code>Eu</code>: Upwelling planar irradiance just <em>below</em> the sea surface. It represents the total upward-traveling light energy per unit area at that depth.</li>
-<li><code>Ed</code>: Downwelling planar irradiance just <em>below</em> the sea surface. It represents the total downward-traveling light energy per unit area at that depth.</li>
+<li><code>wavelength</code>: The wavelength of light</li>
+<li><code>Eu</code>: Total upwelling planar “irradiance” at the water surface (depth index k=0), already normalized by <code>norma(lam)</code>. Units: dimensionless (AOP). Interpretation: Relative magnitude of upwelling planar flux just below the surface.</li>
+<li><code>Ed</code>: Total downwelling planar “irradiance” below the water surface, normalized by <code>norma(lam)</code>. Units: dimensionless (AOP). Interpretation: Relative magnitude of downwelling planar flux just below the surface.</li>
 <li><code>R</code>: Remote sensing reflectance, calculated as the ratio of upwelling irradiance to downwelling irradiance (<code>Eu/Ed</code>) just below the surface.</li>
-<li><code>Lu</code>: Upwelling radiance just <em>below</em> the sea surface. This is the upwelling energy confined to a specific solid angle, often what is measured by a satellite or airborne sensor.</li>
-<li><code>Ed(a)</code>: Downwelling planar irradiance just <em>above</em> the sea surface.</li>
-<li><code>Lu(a)</code>: Upwelling radiance just <em>above</em> the sea surface, also known as the water-leaving radiance.</li>
+<li><code>Lu</code>: Upwelling “radiance” just <em>below</em> the sea surface. This is the upwelling energy confined to a specific solid angle, often what is measured by a satellite or airborne sensor. Units: dimensionless (AOP proxy). Interpretation: Relative strength of near‑zenith upwelling radiance just below the surface.</li>
+<li><code>Ed(a)</code>: Total downwelling planar “irradiance” at the water surface, normalized by <code>norma(lam)</code>. Units: dimensionless (AOP). Interpretation: Relative magnitude of downwelling planar flux just above the surface.</li>
+<li><code>Lu(a)</code>:Upwelling “radiance” just <em>above</em> the sea surface. This is the upwelling energy confined to a specific solid angle, often what is measured by a satellite or airborne sensor. Units: dimensionless (AOP proxy). Interpretation: Relative strength of near‑zenith upwelling radiance just above the surface.</li>
+<li><code>Einc_max</code>: Max‑normalized, angle‑aware incident spectrum computed from the Monte Carlo estimator <code>cositer(lam)=</code>SUM(cos⁡<span class="math inline">\(\theta_i\)</span>)<code>  where  $\theta_i$ are the angles of incidence of the launched photons for wavelength</code>lam`. Units: dimensionless (shape only). Interpretation: A clean relative spectrum of the above‑water incident irradiance that includes the angle‑of‑incidence projection. It is normalized so the peak across all wavelengths is 1.0.</li>
 </ul>
+<section id="using-einc_max-to-obtain-relative-wm-2-or-wm-2nm-1" class="level3">
+<h3 class="anchored" data-anchor-id="using-einc_max-to-obtain-relative-wm-2-or-wm-2nm-1">Using <code>Einc_max</code> to Obtain Relative Wm<sup>-2</sup> (or Wm<sup>-2</sup>nm<sup>-1</sup>)</h3>
+<p>All the AOP columns above are dimensionless (they were normalized by <code>norma(lam)</code>). To reconstruct relative physical units, multiply any normalized AOP (except reflectance <code>R</code>) by <code>Einc_max</code>. <code>Einc_max</code> captures the spectral shape and the angle‑of‑incidence projection. It is max‑normalized across wavelengths, so the peak is 1.0.</p>
+<p>If needed, users can apply a single global constant <span class="math inline">\(C\)</span> to convert the relative values to absolute Wm<sup>-2</sup> (or Wm<sup>-2</sup>nm<sup>-1</sup>).</p>
 
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
