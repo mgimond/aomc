@@ -58,8 +58,10 @@ SUBROUTINE light(wavenum,wavel,iteration,control)
      ELSE
 
         phi   = rand() * 2 * PI
-        theta = PI / 2 - ASIN( rand() )  
-        IF (theta > PI/2.0)   theta = 1.5707  ! Protect against floating‑point roundoff 
+        !theta = PI / 2 - ASIN( rand() )  
+		theta = ACOS( rand() )  ! more efficient
+		IF (theta < 0.0)      theta = 0.0     ! Protect against floating‑point roundoff
+        IF (COS(theta) < 0)   theta = 1.5707  ! Protect against floating‑point roundoff 
      END IF
 
   CASE (1)  ! photon direction is read from file
